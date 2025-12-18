@@ -102,6 +102,30 @@ func main() {
 		api.POST("/login", authHandler.Login)
 	}
 
+	// Serve frontend static files
+	r.Static("/js", "./frontend/js")
+	r.Static("/css", "./frontend/css")
+	r.Static("/fonts", "./frontend/fonts")
+	r.Static("/icons", "./frontend/icons")
+	r.StaticFile("/manifest.json", "./frontend/manifest.json")
+	r.StaticFile("/sw.js", "./frontend/sw.js")
+
+	// Serve HTML files
+	r.StaticFile("/", "./frontend/index.html")
+	r.StaticFile("/index.html", "./frontend/index.html")
+	r.StaticFile("/main.html", "./frontend/main.html")
+	r.StaticFile("/profile.html", "./frontend/profile.html")
+	r.StaticFile("/bookings.html", "./frontend/bookings.html")
+	r.StaticFile("/register.html", "./frontend/register.html")
+	r.StaticFile("/forgot-password.html", "./frontend/forgot-password.html")
+	r.StaticFile("/reset-password.html", "./frontend/reset-password.html")
+	r.StaticFile("/verify-email.html", "./frontend/verify-email.html")
+	r.StaticFile("/admin.html", "./frontend/admin.html")
+	r.StaticFile("/admin-bookings.html", "./frontend/admin-bookings.html")
+	r.StaticFile("/admin-machines.html", "./frontend/admin-machines.html")
+	r.StaticFile("/admin-login.html", "./frontend/admin-login.html")
+	r.StaticFile("/admin_login.html", "./frontend/admin_login.html")
+
 	log.Printf("🚀 Server running on port %s", cfg.Port)
 	if err := r.Run(":" + cfg.Port); err != nil {
 		log.Fatalf("Failed to run server: %v", err)

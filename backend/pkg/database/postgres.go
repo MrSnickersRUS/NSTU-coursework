@@ -2,11 +2,14 @@ package database
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func ConnectDB(connStr string) (*pgxpool.Pool, error) {
@@ -98,24 +101,36 @@ func RunMigrations(pool *pgxpool.Pool) error {
 		}
 	}
 
-	// Seed superadmin if not exists (password: admin)
+	// Seed superadmin if not exists
 	var adminExists bool
 	pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE login = 'admin')").Scan(&adminExists)
 	if !adminExists {
-		// bcrypt hash for "admin"
-		adminHash := "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy"
+		// Generate secure random password
+		randomBytes := make([]byte, 16)
+		if _, err := rand.Read(randomBytes); err != nil {
+			return fmt.Errorf("failed to generate random password: %w", err)
+		}
+		adminLogin := "admin_" + hex.EncodeToString(randomBytes)[:6]
+		adminPassword := hex.EncodeToString(randomBytes)[:12] // 12 character password
+
+		// Hash the password
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
+		if err != nil {
+			return fmt.Errorf("failed to hash admin password: %w", err)
+		}
+
 		_, err = pool.Exec(ctx, `
 			INSERT INTO users (email, login, password_hash, role, email_verified)
-			VALUES ('admin@netiwash.local', 'admin', $1, 'superadmin', true)
-		`, adminHash)
+			VALUES ('admin@netiwash.local', $1, $2, 'superadmin', true)
+		`, adminLogin, string(hashedPassword))
 		if err != nil {
 			log.Printf("⚠️ Failed to create admin: %v", err)
 		} else {
-			log.Println("🔐 ================================")
-			log.Println("🔐 SUPERADMIN CREATED:")
-			log.Println("🔐 Login: admin")
-			log.Println("🔐 Password: admin")
-			log.Println("🔐 ================================")
+			log.Println("🔐 ════════════════════════════════════")
+			log.Println("🔐 СУПЕРАДМИН СОЗДАН (СОХРАНИТЬ!):")
+			log.Printf("🔐 Login:    %s", adminLogin)
+			log.Printf("🔐 Password: %s", adminPassword)
+			log.Println("🔐 ════════════════════════════════════")
 		}
 	}
 
