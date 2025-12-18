@@ -30,16 +30,25 @@ func NewNotificationService(repo *repository.PushRepository, bookingRepo *reposi
 		email = "mailto:admin@neti.ru"
 	}
 
-	if priv == "" || pub == "" {
-		log.Println("⚠️ VAPID keys not found, generating new ones...")
-		var err error
-		priv, pub, err = webpush.GenerateVAPIDKeys()
-		if err != nil {
-			log.Fatalf("Failed to generate VAPID keys: %v", err)
-		}
-		log.Printf("🔑 NEW VAPID KEYS (Save to .env!):")
-		log.Printf("VAPID_PUBLIC_KEY=%s", pub)
-		log.Printf("VAPID_PRIVATE_KEY=%s", priv)
+	// Default keys (generated via npx web-push) for stability across deploys
+	if priv == "" {
+		priv = "MCkShAz8ggYo3uq8j5wMHfmv0fSZgvLaRC0j0YaCaUk"
+	}
+	if pub == "" {
+		pub = "BIV66_T0YefjdnM4JUXri7hD8m9cn_mRLcHYlEQJ5B4NcLo2UnPelrzJcbQd_6sTCHf9n0583IKwPzxdqqBFjM0"
+	}
+	// ... (rest of key generation if somehow still empty)
+
+	// ...
+
+	for _, b := range unnotified {
+		log.Printf("🤖 [WORKER] Sending push for booking %d", b.ID)
+
+		// Send JSON payload
+		msg := fmt.Sprintf(`{"title": "Стирка #%d завершена!", "body": "Не забудьте забрать вещи.", "url": "bookings.html"}`, b.ID)
+		s.SendNotification(ctx, b.UserID, msg)
+
+		s.bookingRepo.MarkPushSent(ctx, b.ID)
 	}
 
 	return &NotificationService{

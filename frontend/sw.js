@@ -99,22 +99,31 @@ self.addEventListener('notificationclick', (event) => {
 // Обработка Push уведомлений
 self.addEventListener('push', function (event) {
     if (event.data) {
-        const payload = event.data.text();
+        let payload = {};
+        try {
+            payload = event.data.json();
+        } catch (e) {
+            // Fallback for plain text
+            payload = { title: 'NETI WASH', body: event.data.text() };
+        }
+
         console.log('[SW] Push Received:', payload);
 
         const options = {
-            body: payload,
+            body: payload.body || 'Новое уведомление',
             icon: '/icons/icon-192x192.png',
             badge: '/icons/icon-192x192.png',
             vibrate: [100, 50, 100],
             data: {
                 dateOfArrival: Date.now(),
-                primaryKey: '2'
+                url: payload.url || 'bookings.html'
             }
         };
 
+        const title = payload.title || 'NETI WASH';
+
         event.waitUntil(
-            self.registration.showNotification('NETI WASH', options)
+            self.registration.showNotification(title, options)
         );
     }
 });
