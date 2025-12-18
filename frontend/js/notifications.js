@@ -221,6 +221,7 @@ function markAllNotificationsRead() {
 const BookingWatcher = {
     checkInterval: null,
     notifiedBookings: new Set(),
+    lastKnownStatuses: {}, // Track status changes
 
     init() {
         // Load previously notified bookings
@@ -229,11 +230,17 @@ const BookingWatcher = {
             this.notifiedBookings = new Set(JSON.parse(stored));
         }
 
-        // Start checking every 30 seconds
+        // Load last known statuses
+        const storedStatuses = localStorage.getItem('netiwash_booking_statuses');
+        if (storedStatuses) {
+            this.lastKnownStatuses = JSON.parse(storedStatuses);
+        }
+
+        // Start checking every 15 seconds (faster for better responsiveness)
         this.startWatching();
 
         // Also check immediately
-        setTimeout(() => this.checkBookings(), 3000);
+        setTimeout(() => this.checkBookings(), 2000);
     },
 
     startWatching() {
@@ -241,7 +248,7 @@ const BookingWatcher = {
 
         this.checkInterval = setInterval(() => {
             this.checkBookings();
-        }, 30000); // Check every 30 seconds
+        }, 15000); // Check every 15 seconds
 
         console.log('[BookingWatcher] Started watching bookings');
     },
@@ -266,31 +273,57 @@ const BookingWatcher = {
 
             const now = new Date();
 
-
-
             bookings.forEach(booking => {
-                // Skip if already notified
-                if (this.notifiedBookings.has(booking.id)) return;
+                const bookingId = booking.id;
+                const currentStatus = booking.status;
+                const previousStatus = this.lastKnownStatuses[bookingId];
 
-                // Skip non-active bookings
-                if (booking.status !== 'active') return;
-
-                // Parse booking end time
-                const [endHour, endMin] = booking.time_slot.split('-')[1].split(':').map(Number);
-                const bookingDate = new Date(booking.booking_date);
-                const endTime = new Date(bookingDate);
-                endTime.setHours(endHour, endMin, 0, 0);
-
-                // Check if washing is complete (end time has passed)
-                if (now >= endTime) {
-                    this.sendWashingCompleteNotification(booking);
-                    this.notifiedBookings.add(booking.id);
-                    this.saveNotifiedBookings();
+                // Check if status changed to 'completed'
+                if (currentStatus === 'completed' && previousStatus !== 'completed') {
+                    // This booking just became completed!
+                    if (!this.notifiedBookings.has(bookingId)) {
+                        console.log('[BookingWatcher] Detected completion:', bookingId, 'was:', previousStatus);
+                        this.sendWashingCompleteNotification(booking);
+                        this.notifiedBookings.add(bookingId);
+                        this.saveNotifiedBookings();
+                    }
                 }
+
+                // Also check time-based completion for active bookings
+                if (currentStatus === 'active' && !this.notifiedBookings.has(bookingId)) {
+                    const [endHour, endMin] = booking.time_slot.split('-')[1].split(':').map(Number);
+                    const bookingDate = new Date(booking.booking_date);
+                    const endTime = new Date(bookingDate);
+                    endTime.setHours(endHour, endMin, 0, 0);
+
+                    if (now >= endTime) {
+                        console.log('[BookingWatcher] Time-based completion:', bookingId);
+                        this.sendWashingCompleteNotification(booking);
+                        this.notifiedBookings.add(bookingId);
+                        this.saveNotifiedBookings();
+                    }
+                }
+
+                // Update last known status
+                this.lastKnownStatuses[bookingId] = currentStatus;
             });
+
+            // Save statuses
+            this.saveStatuses();
+
         } catch (error) {
             console.error('[BookingWatcher] Error checking bookings:', error);
         }
+    },
+
+    saveStatuses() {
+        // Keep only recent statuses (last 50)
+        const keys = Object.keys(this.lastKnownStatuses);
+        if (keys.length > 50) {
+            const toRemove = keys.slice(0, keys.length - 50);
+            toRemove.forEach(k => delete this.lastKnownStatuses[k]);
+        }
+        localStorage.setItem('netiwash_booking_statuses', JSON.stringify(this.lastKnownStatuses));
     },
 
     async sendWashingCompleteNotification(booking) {
