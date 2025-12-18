@@ -15,9 +15,8 @@ RUN go mod download
 # Теперь копируем исходный код
 COPY . .
 
-# Собираем бинарник.
-# -o app : выходной файл назовем "app"
-RUN go build -o app .
+# Собираем бинарник из cmd/server
+RUN go build -o app ./cmd/server
 
 # Этап 2: Запуск
 # Берем супер-легкий Linux (Alpine), весит всего 5 МБ

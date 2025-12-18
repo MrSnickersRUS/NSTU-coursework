@@ -292,11 +292,11 @@ function initBookingPickers() {
             if (!isOccupied) {
                 btn.onclick = () => {
                     timesContainer.querySelectorAll('.time-item:not([disabled])').forEach(b => {
-                        b.classList.remove('bg-primary', 'text-white', 'shadow-md', 'shadow-primary/20');
-                        b.classList.add('bg-white', 'text-dark', 'border-gray-200');
+                        b.classList.remove('border-primary', 'bg-green-50');
+                        b.classList.add('border-gray-200', 'bg-white');
                     });
-                    btn.classList.remove('bg-white', 'text-dark', 'border-gray-200');
-                    btn.classList.add('bg-primary', 'text-white', 'shadow-md', 'shadow-primary/20');
+                    btn.classList.remove('border-gray-200', 'bg-white');
+                    btn.classList.add('border-primary', 'bg-green-50');
                 };
             }
             timesContainer.appendChild(btn);
@@ -320,10 +320,10 @@ window.submitBooking = async () => {
     if (!sheet) return;
 
     const datesContainer = sheet.querySelector('.flex.gap-3');
-    const timesContainer = sheet.querySelector('.grid.grid-cols-4');
+    const timesContainer = document.getElementById('timesContainer');
 
     const selectedDateEl = datesContainer ? datesContainer.querySelector('.border-primary') : null;
-    const selectedTimeEl = timesContainer ? timesContainer.querySelector('.bg-primary') : null;
+    const selectedTimeEl = timesContainer ? timesContainer.querySelector('.border-primary') : null;
 
     if (!selectedDateEl || !selectedTimeEl) {
         if (typeof showModal === 'function') {
