@@ -34,7 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 api.setToken(response.token);
-                api.setUserInfo(response.user);
+                // Ensure login field is populated from name
+                api.setUserInfo({
+                    ...response.user,
+                    login: response.user.name,
+                    name: response.user.name
+                });
 
                 window.location.href = 'admin.html';
             } catch (err) {

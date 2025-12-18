@@ -209,10 +209,10 @@ function handleLoginSuccess(response) {
         // Store user info including email
         if (response.user) {
             api.setUserInfo({
-                login: response.user.login,
-                email: response.user.email || `${response.user.login}@neti.ru`,
+                login: response.user.name, // Backend returns 'name' mapped from login
+                email: response.user.email || `${response.user.name}@neti.ru`,
                 role: response.user.role,
-                name: response.user.login
+                name: response.user.name
             });
         }
         window.location.href = 'main.html';
