@@ -103,7 +103,7 @@ func RunMigrations(pool *pgxpool.Pool) error {
 
 	// Seed superadmin if not exists
 	var adminExists bool
-	pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE login = 'admin')").Scan(&adminExists)
+	pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE role = 'superadmin')").Scan(&adminExists)
 	if !adminExists {
 		// Generate secure random password
 		randomBytes := make([]byte, 16)

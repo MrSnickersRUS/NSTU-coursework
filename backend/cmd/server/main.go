@@ -10,6 +10,7 @@ import (
 	"netiwash/internal/service"
 	"netiwash/pkg/database"
 	"netiwash/pkg/utils"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -103,6 +104,18 @@ func main() {
 	}
 
 	// Serve frontend static files
+	// Check if frontend directory exists
+	if _, err := os.Stat("./frontend"); os.IsNotExist(err) {
+		log.Println("⚠️ WARNING: ./frontend directory not found!")
+		log.Println("⚠️ Static files will not be served.")
+		// Try alternative paths
+		if _, err := os.Stat("/root/frontend"); err == nil {
+			log.Println("✅ Found frontend at /root/frontend")
+		}
+	} else {
+		log.Println("✅ Frontend directory found: ./frontend")
+	}
+
 	r.Static("/js", "./frontend/js")
 	r.Static("/css", "./frontend/css")
 	r.Static("/fonts", "./frontend/fonts")
