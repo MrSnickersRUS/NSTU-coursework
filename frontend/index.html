@@ -5,8 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NETI WASH - Вход</title>
-    <link href="css/tailwind.css" rel="stylesheet">
-    <link href="fonts/fonts.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#07AB66',
+                        accent: '#DE093B',
+                        dark: '#2B2A29',
+                        warn: '#F2BA23',
+                        gray: { sec: '#676767', light: '#9C9C9C' }
+                    },
+                    boxShadow: { 'custom': '0 4px 24px rgba(0, 0, 0, 0.1)' },
+                    fontFamily: { sans: ['Manrope', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Manrope', sans-serif;
