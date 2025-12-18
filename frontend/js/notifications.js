@@ -261,31 +261,15 @@ const BookingWatcher = {
     },
 
     async checkBookings() {
-        console.log('[BookingWatcher] Checking bookings...');
-
         // Only check if notifications are enabled
-        if (!NotificationManager.isEnabled()) {
-            console.log('[BookingWatcher] Notifications disabled');
-            return;
-        }
+        if (!NotificationManager.isEnabled()) return;
 
         // Only check if logged in
-        if (typeof api === 'undefined') {
-            console.log('[BookingWatcher] api not defined');
-            return;
-        }
-        if (!api.getToken()) {
-            console.log('[BookingWatcher] No token');
-            return;
-        }
+        if (typeof api === 'undefined' || !api.getToken()) return;
 
         try {
             const bookings = await api.get('/bookings');
-            console.log('[BookingWatcher] Got', bookings?.length || 0, 'bookings');
-            if (!Array.isArray(bookings)) {
-                console.log('[BookingWatcher] Bookings not array:', typeof bookings);
-                return;
-            }
+            if (!Array.isArray(bookings)) return;
 
             const now = new Date();
 
@@ -293,15 +277,10 @@ const BookingWatcher = {
                 const bookingId = booking.id;
                 const currentStatus = booking.status;
                 const previousStatus = this.lastKnownStatuses[bookingId];
-                const alreadyNotified = this.notifiedBookings.has(bookingId);
-
-                console.log(`[BookingWatcher] #${bookingId}: curr=${currentStatus} prev=${previousStatus} notified=${alreadyNotified}`);
 
                 // Check if status changed to 'completed'
                 if (currentStatus === 'completed' && previousStatus !== 'completed') {
-                    // This booking just became completed!
                     if (!this.notifiedBookings.has(bookingId)) {
-                        console.log('[BookingWatcher] Detected completion:', bookingId, 'was:', previousStatus);
                         this.sendWashingCompleteNotification(booking);
                         this.notifiedBookings.add(bookingId);
                         this.saveNotifiedBookings();
@@ -310,17 +289,13 @@ const BookingWatcher = {
 
                 // Also check time-based completion for active bookings
                 if (currentStatus === 'active' && !this.notifiedBookings.has(bookingId)) {
-                    // Safety check for time_slot
-                    if (!booking.time_slot || !booking.time_slot.includes('-')) {
-                        console.log('[BookingWatcher] Skipping booking without valid time_slot:', bookingId);
-                    } else {
+                    if (booking.time_slot && booking.time_slot.includes('-')) {
                         const [endHour, endMin] = booking.time_slot.split('-')[1].split(':').map(Number);
                         const bookingDate = new Date(booking.booking_date);
                         const endTime = new Date(bookingDate);
                         endTime.setHours(endHour, endMin, 0, 0);
 
                         if (now >= endTime) {
-                            console.log('[BookingWatcher] Time-based completion:', bookingId);
                             this.sendWashingCompleteNotification(booking);
                             this.notifiedBookings.add(bookingId);
                             this.saveNotifiedBookings();
@@ -336,7 +311,7 @@ const BookingWatcher = {
             this.saveStatuses();
 
         } catch (error) {
-            console.error('[BookingWatcher] Error checking bookings:', error);
+            console.error('[BookingWatcher] Error:', error);
         }
     },
 

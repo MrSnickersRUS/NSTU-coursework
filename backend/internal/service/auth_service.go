@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"netiwash/internal/models"
@@ -108,32 +109,47 @@ func (s *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*mod
 }
 
 func (s *AuthService) VerifyEmail(ctx context.Context, token string) error {
-	return s.repo.VerifyEmailByToken(ctx, token)
+	log.Printf("📧 [EMAIL_VERIFY] Verifying token: %s...", token[:min(16, len(token))])
+	err := s.repo.VerifyEmailByToken(ctx, token)
+	if err != nil {
+		log.Printf("📧 [EMAIL_VERIFY] Verification failed: %v", err)
+	} else {
+		log.Printf("📧 [EMAIL_VERIFY] Email verified successfully")
+	}
+	return err
 }
 
 func (s *AuthService) RequestPasswordReset(ctx context.Context, email string) error {
+	log.Printf("📧 [PASSWORD_RESET] Request for email: %s", email)
+
 	user, err := s.repo.GetByEmail(ctx, email)
 	if err != nil || user == nil {
+		log.Printf("📧 [PASSWORD_RESET] User not found or error: %v", err)
 		// Don't reveal if user exists (security)
 		return nil
 	}
 
 	resetToken, err := utils.GenerateSecureToken()
 	if err != nil {
+		log.Printf("📧 [PASSWORD_RESET] Token generation error: %v", err)
 		return err
 	}
 
 	expiry := time.Now().Add(1 * time.Hour)
 	if err := s.repo.SetPasswordResetToken(ctx, user.ID, resetToken, expiry); err != nil {
+		log.Printf("📧 [PASSWORD_RESET] Save token error: %v", err)
 		return err
 	}
 
+	log.Printf("📧 [PASSWORD_RESET] Token saved for user %d, expires: %v", user.ID, expiry)
+
 	// Send reset email (non-blocking)
 	go func() {
-		resetURL := fmt.Sprintf("http://localhost:8081/reset-password.html?token=%s", resetToken)
-		err := s.emailService.SendPasswordResetEmail(user.Email, resetURL)
+		err := s.emailService.SendPasswordResetEmail(user.Email, resetToken)
 		if err != nil {
-			fmt.Printf("Failed to send reset email: %v\n", err)
+			log.Printf("📧 [PASSWORD_RESET] Send email error: %v", err)
+		} else {
+			log.Printf("📧 [PASSWORD_RESET] Email sent successfully to %s", user.Email)
 		}
 	}()
 
