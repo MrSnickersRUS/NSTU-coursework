@@ -57,3 +57,16 @@ func (r *MachineRepository) UpdateStatus(ctx context.Context, id int, status str
 
 	return nil
 }
+
+func (r *MachineRepository) Create(ctx context.Context, m *models.Machine) error {
+	query := `
+		INSERT INTO machines (name, type, status, is_active)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id
+	`
+	err := r.db.QueryRow(ctx, query, m.Name, m.Type, m.Status, m.IsActive).Scan(&m.ID)
+	if err != nil {
+		return fmt.Errorf("failed to create machine: %w", err)
+	}
+	return nil
+}

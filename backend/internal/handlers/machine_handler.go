@@ -54,5 +54,25 @@ func (h *MachineHandler) UpdateStatus(c *gin.Context) {
 	}
 
 	if err := h.repo.UpdateStatus(c.Request.Context(), machineID, req.Status); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Machine status updated successfully"})
+}
+
+// POST /api/machines
+func (h *MachineHandler) Create(c *gin.Context) {
+	var req models.Machine
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := h.repo.Create(c.Request.Context(), &req); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, req)
 }
