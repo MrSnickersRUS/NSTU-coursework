@@ -2,7 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom arbitrary values that Tailwind CLI doesn't generate */
+/* ============================================
+   Custom classes that Tailwind CLI doesn't auto-generate
+   ============================================ */
+
+/* Arbitrary border-radius values */
 .rounded-\[20px\] {
     border-radius: 20px;
 }
@@ -16,18 +20,37 @@
     border-top-right-radius: 30px;
 }
 
+/* Arbitrary colors */
 .bg-\[\#FAFAFA\] {
     background-color: #FAFAFA;
+}
+
+.bg-\[\#FAFAFA\]\/95 {
+    background-color: rgba(250, 250, 250, 0.95);
 }
 
 .border-\[\#FAFAFA\] {
     border-color: #FAFAFA;
 }
 
+.hover\:bg-\[\#06965a\]:hover {
+    background-color: #06965a;
+}
+
+.hover\:text-\[\#06965a\]:hover {
+    color: #06965a;
+}
+
+/* Arbitrary sizes */
 .text-\[10px\] {
     font-size: 10px;
 }
 
+.lg\:w-\[40\%\] {
+    width: 40%;
+}
+
+/* Custom shadows */
 .shadow-sheet {
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
 }
@@ -36,14 +59,88 @@
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
+.shadow-custom {
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-primary\/20 {
+    box-shadow: 0 4px 6px -1px rgba(7, 171, 102, 0.2);
+}
+
+.shadow-primary\/25 {
+    box-shadow: 0 4px 6px -1px rgba(7, 171, 102, 0.25);
+}
+
+.shadow-primary\/30 {
+    box-shadow: 0 6px 8px -2px rgba(7, 171, 102, 0.3);
+}
+
+.shadow-accent\/30 {
+    box-shadow: 0 4px 6px -1px rgba(222, 9, 59, 0.3);
+}
+
+.shadow-dark\/20 {
+    box-shadow: 0 4px 6px -1px rgba(43, 42, 41, 0.2);
+}
+
+/* Custom theme colors */
+.bg-primary {
+    background-color: #07AB66;
+}
+
+.text-primary {
+    color: #07AB66;
+}
+
+.border-primary {
+    border-color: #07AB66;
+}
+
+.bg-accent {
+    background-color: #DE093B;
+}
+
+.text-accent {
+    color: #DE093B;
+}
+
+.bg-dark {
+    background-color: #2B2A29;
+}
+
+.text-dark {
+    color: #2B2A29;
+}
+
+.bg-warn {
+    background-color: #F2BA23;
+}
+
+.text-warn {
+    color: #F2BA23;
+}
+
 .bg-gray-bg {
     background-color: #F5F5F5;
+}
+
+.bg-gray-sec {
+    background-color: #676767;
 }
 
 .text-gray-sec {
     color: #676767;
 }
 
+.text-gray-light {
+    color: #9C9C9C;
+}
+
+.placeholder-gray-light::placeholder {
+    color: #9C9C9C;
+}
+
+/* Status colors */
 .text-status-success {
     color: #07AB66;
 }
@@ -54,4 +151,42 @@
 
 .text-status-wait {
     color: #F2BA23;
+}
+
+.bg-status-success {
+    background-color: #07AB66;
+}
+
+.bg-status-busy {
+    background-color: #DE093B;
+}
+
+.bg-status-wait {
+    background-color: #F2BA23;
+}
+
+/* Primary with opacity */
+.bg-primary\/90 {
+    background-color: rgba(7, 171, 102, 0.9);
+}
+
+.hover\:bg-primary\/90:hover {
+    background-color: rgba(7, 171, 102, 0.9);
+}
+
+.focus\:ring-primary\/10:focus {
+    --tw-ring-color: rgba(7, 171, 102, 0.1);
+}
+
+.focus\:ring-primary\/20:focus {
+    --tw-ring-color: rgba(7, 171, 102, 0.2);
+}
+
+/* Border opacity */
+.border-gray-200\/50 {
+    border-color: rgba(229, 231, 235, 0.5);
+}
+
+.border-gray-200\/60 {
+    border-color: rgba(229, 231, 235, 0.6);
 }
