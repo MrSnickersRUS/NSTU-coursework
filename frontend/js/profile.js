@@ -36,5 +36,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Failed to load booking stats:', error);
     }
 
+    // Notification toggle setup
+    const toggle = document.getElementById('toggle');
+    if (toggle) {
+        // Load saved state
+        const notificationsEnabled = localStorage.getItem('netiwash_notifications_enabled');
+        toggle.checked = notificationsEnabled === null || notificationsEnabled === 'true';
+
+        // Update toggle label color based on state
+        updateToggleStyle(toggle);
+
+        // Handle toggle change
+        toggle.addEventListener('change', () => {
+            localStorage.setItem('netiwash_notifications_enabled', toggle.checked ? 'true' : 'false');
+            updateToggleStyle(toggle);
+        });
+    }
+
     // Logout is handled by dashboard.js via window.confirmLogout
 });
+
+// Update toggle visual style
+function updateToggleStyle(toggle) {
+    const label = toggle.nextElementSibling;
+    if (label) {
+        if (toggle.checked) {
+            label.classList.remove('bg-gray-200');
+            label.classList.add('bg-primary');
+        } else {
+            label.classList.remove('bg-primary');
+            label.classList.add('bg-gray-200');
+        }
+    }
+}
+
