@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"netiwash/internal/config"
@@ -11,6 +10,8 @@ import (
 	"netiwash/internal/service"
 	"netiwash/pkg/database"
 	"netiwash/pkg/utils"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -20,6 +21,12 @@ func main() {
 		log.Fatalf("Не удалось подключиться к бд: %v", err)
 	}
 	defer dbPool.Close()
+
+	// Auto-run migrations
+	if err := database.RunMigrations(dbPool); err != nil {
+		log.Printf("⚠️ Migration warning: %v", err)
+	}
+
 	emailService := utils.NewEmailService()
 
 	userRepo := repository.NewUserRepository(dbPool)
