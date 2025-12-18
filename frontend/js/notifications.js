@@ -215,7 +215,136 @@ function markAllNotificationsRead() {
     NotificationManager.markAllAsRead();
 }
 
+// ============================================
+// BookingWatcher - monitors bookings and sends notifications when washing completes
+// ============================================
+const BookingWatcher = {
+    checkInterval: null,
+    notifiedBookings: new Set(),
+
+    init() {
+        // Load previously notified bookings
+        const stored = localStorage.getItem('netiwash_notified_bookings');
+        if (stored) {
+            this.notifiedBookings = new Set(JSON.parse(stored));
+        }
+
+        // Start checking every 30 seconds
+        this.startWatching();
+
+        // Also check immediately
+        setTimeout(() => this.checkBookings(), 3000);
+    },
+
+    startWatching() {
+        if (this.checkInterval) return;
+
+        this.checkInterval = setInterval(() => {
+            this.checkBookings();
+        }, 30000); // Check every 30 seconds
+
+        console.log('[BookingWatcher] Started watching bookings');
+    },
+
+    stopWatching() {
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+        }
+    },
+
+    async checkBookings() {
+        // Only check if notifications are enabled
+        if (!NotificationManager.isEnabled()) return;
+
+        // Only check if logged in
+        if (typeof api === 'undefined' || !api.getToken()) return;
+
+        try {
+            const bookings = await api.get('/bookings');
+            if (!Array.isArray(bookings)) return;
+
+            const now = new Date();
+
+
+
+            bookings.forEach(booking => {
+                // Skip if already notified
+                if (this.notifiedBookings.has(booking.id)) return;
+
+                // Skip non-active bookings
+                if (booking.status !== 'active') return;
+
+                // Parse booking end time
+                const [endHour, endMin] = booking.time_slot.split('-')[1].split(':').map(Number);
+                const bookingDate = new Date(booking.booking_date);
+                const endTime = new Date(bookingDate);
+                endTime.setHours(endHour, endMin, 0, 0);
+
+                // Check if washing is complete (end time has passed)
+                if (now >= endTime) {
+                    this.sendWashingCompleteNotification(booking);
+                    this.notifiedBookings.add(booking.id);
+                    this.saveNotifiedBookings();
+                }
+            });
+        } catch (error) {
+            console.error('[BookingWatcher] Error checking bookings:', error);
+        }
+    },
+
+    async sendWashingCompleteNotification(booking) {
+        const machineName = booking.machine_name || `Машинка #${booking.machine_id}`;
+        const title = 'Стирка завершена! 🧺';
+        const message = `${machineName} закончила работу. Заберите вещи!`;
+
+        // Add to in-app notifications
+        NotificationManager.addNotification('success', title, message);
+
+        // Send push notification if available
+        if (typeof PWAManager !== 'undefined' && 'Notification' in window) {
+            try {
+                await PWAManager.sendLocalNotification(title, message, '/bookings.html');
+            } catch (e) {
+                console.log('[BookingWatcher] Could not send push notification:', e);
+            }
+        }
+
+        console.log('[BookingWatcher] Sent notification for booking:', booking.id);
+    },
+
+    saveNotifiedBookings() {
+        // Keep only last 100 to avoid bloating localStorage
+        const arr = Array.from(this.notifiedBookings).slice(-100);
+        localStorage.setItem('netiwash_notified_bookings', JSON.stringify(arr));
+    },
+
+    // Clean up old entries (run occasionally)
+    cleanupOldEntries() {
+        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+        // Simple cleanup - just keep it reasonably sized
+        if (this.notifiedBookings.size > 100) {
+            const arr = Array.from(this.notifiedBookings).slice(-50);
+            this.notifiedBookings = new Set(arr);
+            this.saveNotifiedBookings();
+        }
+    }
+};
+
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     NotificationManager.init();
+
+    // Start BookingWatcher after a short delay (to let api load)
+    setTimeout(() => {
+        BookingWatcher.init();
+    }, 2000);
 });
+
+// Also check when page becomes visible again
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        BookingWatcher.checkBookings();
+    }
+});
+
