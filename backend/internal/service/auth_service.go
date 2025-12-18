@@ -89,9 +89,10 @@ func (s *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*mod
 		return nil, errors.New("invalid email/login or password")
 	}
 
-	if !user.EmailVerified && user.Role != "superadmin" {
-		return nil, errors.New("email not verified")
-	}
+	// Email verification disabled for coursework demo/testing
+	// if !user.EmailVerified && user.Role != "superadmin" {
+	// 	return nil, errors.New("email not verified")
+	// }
 
 	token, err := utils.GenerateToken(user.ID, user.Role, s.jwtSecret)
 	if err != nil {

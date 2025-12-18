@@ -75,13 +75,17 @@ func (h *BookingHandler) Create(c *gin.Context) {
 
 	// Combine
 	fullTimeStr := req.Date + "T" + req.Time + ":00"
-	// Try parse RFC3339-like or simpler
-	// Let's generic parse:
-	startTime, err := time.Parse("2006-01-02T15:04:05", fullTimeStr)
+
+	// Parse with local timezone (Novosibirsk = UTC+7)
+	// This ensures the time is interpreted in the user's timezone
+	loc, err := time.LoadLocation("Asia/Novosibirsk")
 	if err != nil {
-		// Fallback or error. Previous code just used time.Now() + hour match.
-		// Let's try simpler logic if frontend sends full ISO.
-		// Actually, let's construct it properly.
+		// Fallback to UTC+7 fixed offset if location not available
+		loc = time.FixedZone("UTC+7", 7*60*60)
+	}
+
+	startTime, err := time.ParseInLocation("2006-01-02T15:04:05", fullTimeStr, loc)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date/time format"})
 		return
 	}
