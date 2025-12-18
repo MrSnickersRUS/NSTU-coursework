@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // 2. User Greeting & Profile Info
-    const userInfo = JSON.parse(sessionStorage.getItem('user_info') || '{}');
+    const userInfo = api.getUserInfo();
     const login = userInfo.login || 'Пользователь';
     const email = userInfo.email || `${login}@neti.ru`;
 

@@ -208,12 +208,12 @@ function handleLoginSuccess(response) {
         api.setToken(response.token);
         // Store user info including email
         if (response.user) {
-            sessionStorage.setItem('user_info', JSON.stringify({
+            api.setUserInfo({
                 login: response.user.login,
                 email: response.user.email || `${response.user.login}@neti.ru`,
                 role: response.user.role,
                 name: response.user.login
-            }));
+            });
         }
         window.location.href = 'main.html';
     } else {
@@ -228,6 +228,6 @@ function isMock(error) {
 function mockLogin() {
     console.warn('Backend unavailable. Using Mock Mode.');
     api.setToken('mock_token_123');
-    localStorage.setItem('user_info', JSON.stringify({ name: 'Artem', email: 'test@neti.ru', role: 'user' }));
+    api.setUserInfo({ name: 'Artem', email: 'test@neti.ru', role: 'user' });
     window.location.href = 'main.html';
 }

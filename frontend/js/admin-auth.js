@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 api.setToken(response.token);
-                sessionStorage.setItem('user_info', JSON.stringify(response.user));
+                api.setUserInfo(response.user);
 
                 window.location.href = 'admin.html';
             } catch (err) {

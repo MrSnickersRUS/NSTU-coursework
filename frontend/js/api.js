@@ -9,25 +9,26 @@ class ApiService {
     }
 
     /**
-     * Get Auth Token from local storage
+     * Get Auth Token from local storage (persistent)
      */
     getToken() {
-        return sessionStorage.getItem('token');
+        return localStorage.getItem('netiwash_token');
     }
 
     /**
-     * Save Auth Token
+     * Save Auth Token (persistent)
      */
     setToken(token) {
-        sessionStorage.setItem('token', token);
+        localStorage.setItem('netiwash_token', token);
     }
 
     /**
      * Clear Auth Token (Logout)
      */
     logout() {
-        sessionStorage.clear();
-        localStorage.clear();
+        localStorage.removeItem('netiwash_token');
+        localStorage.removeItem('netiwash_user_info');
+        // Keep notification settings
 
         // Clear history to prevent back button
         if (window.history && window.history.pushState) {
@@ -41,10 +42,17 @@ class ApiService {
     }
 
     /**
-     * Get User Info
+     * Get User Info (persistent)
      */
     getUserInfo() {
-        return JSON.parse(sessionStorage.getItem('user_info') || '{}');
+        return JSON.parse(localStorage.getItem('netiwash_user_info') || '{}');
+    }
+
+    /**
+     * Save User Info (persistent)
+     */
+    setUserInfo(userInfo) {
+        localStorage.setItem('netiwash_user_info', JSON.stringify(userInfo));
     }
 
     /**
