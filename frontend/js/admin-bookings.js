@@ -30,8 +30,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Format dates
             const startTime = new Date(booking.start_time);
             const endTime = new Date(booking.end_time);
-            const dateStr = startTime.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
-            const timeStr = `${startTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}`;
+            const dateStr = startTime.toLocaleString('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+
+            const startH = String(startTime.getUTCHours()).padStart(2, '0');
+            const startM = String(startTime.getUTCMinutes()).padStart(2, '0');
+            const endH = String(endTime.getUTCHours()).padStart(2, '0');
+            const endM = String(endTime.getUTCMinutes()).padStart(2, '0');
+            const timeStr = `${startH}:${startM} - ${endH}:${endM}`;
 
             return `
                 <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-4 ${cardClass}">

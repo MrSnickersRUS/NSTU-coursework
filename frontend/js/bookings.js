@@ -85,10 +85,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 date = new Date();
             }
 
-            const day = date.getDate();
-            const month = date.toLocaleString('ru-RU', { month: 'long' });
-            const timeStart = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-            const timeEnd = new Date(booking.end_time).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+            const day = date.getUTCDate();
+            const month = date.toLocaleString('ru-RU', { month: 'long', timeZone: 'UTC' });
+
+            // Use UTC hours because backend sends "local" time as UTC timestamp
+            const startH = String(date.getUTCHours()).padStart(2, '0');
+            const startM = String(date.getUTCMinutes()).padStart(2, '0');
+            const timeStart = `${startH}:${startM}`;
+
+            const endDate = new Date(booking.end_time);
+            const endH = String(endDate.getUTCHours()).padStart(2, '0');
+            const endM = String(endDate.getUTCMinutes()).padStart(2, '0');
+            const timeEnd = `${endH}:${endM}`;
 
             const el = document.createElement('div');
             el.className = 'bg-white rounded-2xl p-5 shadow-card border border-gray-100 relative z-0 mb-4';
