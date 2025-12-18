@@ -261,15 +261,31 @@ const BookingWatcher = {
     },
 
     async checkBookings() {
+        console.log('[BookingWatcher] Checking bookings...');
+
         // Only check if notifications are enabled
-        if (!NotificationManager.isEnabled()) return;
+        if (!NotificationManager.isEnabled()) {
+            console.log('[BookingWatcher] Notifications disabled');
+            return;
+        }
 
         // Only check if logged in
-        if (typeof api === 'undefined' || !api.getToken()) return;
+        if (typeof api === 'undefined') {
+            console.log('[BookingWatcher] api not defined');
+            return;
+        }
+        if (!api.getToken()) {
+            console.log('[BookingWatcher] No token');
+            return;
+        }
 
         try {
             const bookings = await api.get('/bookings');
-            if (!Array.isArray(bookings)) return;
+            console.log('[BookingWatcher] Got', bookings?.length || 0, 'bookings');
+            if (!Array.isArray(bookings)) {
+                console.log('[BookingWatcher] Bookings not array:', typeof bookings);
+                return;
+            }
 
             const now = new Date();
 
@@ -277,6 +293,9 @@ const BookingWatcher = {
                 const bookingId = booking.id;
                 const currentStatus = booking.status;
                 const previousStatus = this.lastKnownStatuses[bookingId];
+                const alreadyNotified = this.notifiedBookings.has(bookingId);
+
+                console.log(`[BookingWatcher] #${bookingId}: curr=${currentStatus} prev=${previousStatus} notified=${alreadyNotified}`);
 
                 // Check if status changed to 'completed'
                 if (currentStatus === 'completed' && previousStatus !== 'completed') {
