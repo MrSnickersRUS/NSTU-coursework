@@ -8,12 +8,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load user info
     const userInfo = api.getUserInfo();
     const login = userInfo.login || 'Пользователь';
-    const email = userInfo.email || `${login}@neti.ru`;
+    // Use stored email, or fallback to placeholder text (not fake email) if missing
+    // We fixed auth.js to store email correctly from backend
+    const email = userInfo.email || 'Нет email';
 
     // Update user name (h2)
     const nameEl = document.querySelector('main h2.text-2xl');
     if (nameEl) {
         nameEl.textContent = login;
+        // Remove loading state if present
+        nameEl.classList.remove('animate-pulse');
     }
 
     // Update username/email (p below h2)
