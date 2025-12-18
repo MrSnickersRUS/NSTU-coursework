@@ -111,12 +111,16 @@ func RunMigrations(pool *pgxpool.Pool) error {
 
 	if !adminExists {
 		// Generate secure random password
-		randomBytes := make([]byte, 16)
-		if _, err := rand.Read(randomBytes); err != nil {
+		randomLoginBytes := make([]byte, 16)
+		randomPasswordBytes := make([]byte, 16)
+		if _, err := rand.Read(randomLoginBytes); err != nil {
 			return fmt.Errorf("failed to generate random password: %w", err)
 		}
-		adminLogin := "admin_" + hex.EncodeToString(randomBytes)[:6]
-		adminPassword := hex.EncodeToString(randomBytes)[:12] // 12 character password
+		if _, err := rand.Read(randomPasswordBytes); err != nil {
+			return fmt.Errorf("failed to generate random password: %w", err)
+		}
+		adminLogin := "admin_" + hex.EncodeToString(randomLoginBytes)[:6]
+		adminPassword := hex.EncodeToString(randomPasswordBytes)[:12] // 12 character password
 
 		// Hash the password
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
