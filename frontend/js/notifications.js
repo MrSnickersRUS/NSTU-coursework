@@ -382,7 +382,14 @@ const BookingWatcher = {
             if (!keyRes || !keyRes.publicKey) return;
             const convertedKey = this.urlBase64ToUint8Array(keyRes.publicKey);
 
-            // 2. Subscribe
+            // 2. Unsubscribe old subscription first (to handle key rotation)
+            const existingSub = await reg.pushManager.getSubscription();
+            if (existingSub) {
+                console.log('[WebPush] Unsubscribing old subscription...');
+                await existingSub.unsubscribe();
+            }
+
+            // 3. Subscribe with new key
             const sub = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: convertedKey
