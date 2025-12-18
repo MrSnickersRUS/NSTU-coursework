@@ -5,24 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NETI WASH - Админ-панель</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#07AB66',
-                        accent: '#DE093B',
-                        dark: '#2B2A29',
-                        warn: '#F2BA23',
-                        gray: { sec: '#676767', light: '#9C9C9C', bg: '#F5F5F5' }
-                    },
-                    fontFamily: { sans: ['Manrope', 'sans-serif'] },
-                    boxShadow: { 'card': '0 2px 12px rgba(0, 0, 0, 0.04)' }
-                }
-            }
-        }
-    </script>
+    <link href="css/tailwind.css" rel="stylesheet">
     <link href="fonts/fonts.css" rel="stylesheet">
 </head>
 
@@ -183,7 +166,6 @@
 
         mobileMenuBtn.addEventListener('click', toggleSidebar);
         sidebarOverlay.addEventListener('click', toggleSidebar);
-    </script>
 </body>
 
 </html>

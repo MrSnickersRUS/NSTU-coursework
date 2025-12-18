@@ -103,7 +103,12 @@ func RunMigrations(pool *pgxpool.Pool) error {
 
 	// Seed superadmin if not exists
 	var adminExists bool
-	pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE role = 'superadmin')").Scan(&adminExists)
+	err = pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE role = 'superadmin')").Scan(&adminExists)
+	if err != nil {
+		log.Printf("⚠️ Failed to check admin: %v", err)
+	}
+	log.Printf("🔍 Superadmin check: exists=%v", adminExists)
+
 	if !adminExists {
 		// Generate secure random password
 		randomBytes := make([]byte, 16)
@@ -132,6 +137,8 @@ func RunMigrations(pool *pgxpool.Pool) error {
 			log.Printf("🔐 Password: %s", adminPassword)
 			log.Println("🔐 ════════════════════════════════════")
 		}
+	} else {
+		log.Println("ℹ️ Superadmin already exists, skipping creation")
 	}
 
 	return nil
