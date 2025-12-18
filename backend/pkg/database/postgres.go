@@ -75,6 +75,26 @@ func RunMigrations(pool *pgxpool.Pool) error {
 	CREATE INDEX IF NOT EXISTS idx_bookings_machine_id ON bookings(machine_id);
 	CREATE INDEX IF NOT EXISTS idx_users_verification_token ON users(verification_token);
 	CREATE INDEX IF NOT EXISTS idx_users_reset_token ON users(reset_token);
+
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+        id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        endpoint TEXT NOT NULL,
+        p256dh TEXT NOT NULL,
+        auth TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, endpoint)
+    );
+
+    -- Try to add column if not exists (safe for re-run)
+    DO $$ 
+    BEGIN 
+        BEGIN
+            ALTER TABLE bookings ADD COLUMN push_sent BOOLEAN DEFAULT FALSE;
+        EXCEPTION
+            WHEN duplicate_column THEN RAISE NOTICE 'column push_sent already exists in bookings.';
+        END;
+    END $$;
 	`
 
 	_, err := pool.Exec(ctx, schema)
