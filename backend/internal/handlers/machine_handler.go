@@ -54,13 +54,5 @@ func (h *MachineHandler) UpdateStatus(c *gin.Context) {
 	}
 
 	if err := h.repo.UpdateStatus(c.Request.Context(), machineID, req.Status); err != nil {
-		if err.Error() == "machine not found" {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Machine not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	c.JSON(http.StatusOK, gin.H{"message": "Machine status updated successfully"})
 }

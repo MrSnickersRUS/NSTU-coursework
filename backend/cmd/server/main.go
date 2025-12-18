@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"netiwash/internal/config"
@@ -59,8 +60,16 @@ func main() {
 	machineHandler := handlers.NewMachineHandler(machineRepo)
 
 	bookingRepo := repository.NewBookingRepository(dbPool)
-	bookingService := service.NewBookingService(bookingRepo)
+	bookingService := service.NewBookingService(bookingRepo, machineRepo)
 	bookingHandler := handlers.NewBookingHandler(bookingService)
+
+	// Notification Dependencies (Web Push)
+	pushRepo := repository.NewPushRepository(dbPool)
+	notificationService := service.NewNotificationService(pushRepo, bookingRepo)
+	notificationHandler := handlers.NewNotificationHandler(notificationService)
+
+	// Start Background Worker
+	notificationService.StartWorker(context.Background())
 
 	// Middleware
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWTSecret)
@@ -97,6 +106,12 @@ func main() {
 		api.GET("/verify-email", emailHandler.VerifyEmail)
 		api.POST("/forgot-password", emailHandler.ForgotPassword)
 		api.POST("/reset-password", emailHandler.ResetPassword)
+
+		// Web Push
+		api.GET("/vapid-key", notificationHandler.GetVAPIDKey)
+		api.POST("/subscribe", authMiddleware.RequireAuth, notificationHandler.Subscribe)
+
+		api.POST("/machines", authMiddleware.RequireAuth, machineHandler.Create)
 
 		// Aliases for root api access if needed matching frontend
 		api.POST("/register", authHandler.Register)

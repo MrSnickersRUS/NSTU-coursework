@@ -143,3 +143,58 @@ func (r *BookingRepository) UpdateStatus(ctx context.Context, id int, status str
 	_, err := r.db.Exec(ctx, query, status, id)
 	return err
 }
+
+func (r *BookingRepository) GetExpiredActiveBookings(ctx context.Context) ([]models.Booking, error) {
+	query := `
+		SELECT id, user_id, machine_id, start_time, end_time, status, created_at
+		FROM bookings
+		WHERE status = 'active' AND end_time < NOW()
+	`
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var bookings []models.Booking
+	for rows.Next() {
+		var b models.Booking
+		if err := rows.Scan(&b.ID, &b.UserID, &b.MachineID, &b.StartTime, &b.EndTime, &b.Status, &b.CreatedAt); err != nil {
+			return nil, err
+		}
+		bookings = append(bookings, b)
+	}
+	return bookings, nil
+}
+
+func (r *BookingRepository) MarkPushSent(ctx context.Context, id int) error {
+	// Also ensures we don't send again if we check 'push_sent' later
+	// But for current logic: found expired -> send -> complete -> done.
+	// If we want to support 'push_sent' column usage:
+	query := `UPDATE bookings SET push_sent = TRUE WHERE id = $1`
+	_, err := r.db.Exec(ctx, query, id)
+	return err
+}
+
+func (r *BookingRepository) GetCompletedUnnotifiedBookings(ctx context.Context) ([]models.Booking, error) {
+	query := `
+        SELECT id, user_id, machine_id, start_time, end_time, status, created_at
+        FROM bookings
+        WHERE status = 'completed' AND push_sent = FALSE
+    `
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var bookings []models.Booking
+	for rows.Next() {
+		var b models.Booking
+		if err := rows.Scan(&b.ID, &b.UserID, &b.MachineID, &b.StartTime, &b.EndTime, &b.Status, &b.CreatedAt); err != nil {
+			return nil, err
+		}
+		bookings = append(bookings, b)
+	}
+	return bookings, nil
+}

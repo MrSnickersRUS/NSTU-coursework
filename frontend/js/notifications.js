@@ -251,9 +251,13 @@ const BookingWatcher = {
 
         // Check on visibility change (when user opens app)
         document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                console.log('[BookingWatcher] App visible, checking immediately');
-                this.checkBookings();
+            if (document.visibilityState === 'visible') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log('[BookingWatcher] Permission granted');
+                        this.setupWebPush();
+                    }
+                });
             }
         });
 
@@ -361,6 +365,53 @@ const BookingWatcher = {
         // Keep only last 100 to avoid bloating localStorage
         const arr = Array.from(this.notifiedBookings).slice(-100);
         localStorage.setItem('netiwash_notified_bookings', JSON.stringify(arr));
+    },
+
+    // --- WEB PUSH LOGIC ---
+    async setupWebPush() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            console.log('[WebPush] Not supported');
+            return;
+        }
+
+        try {
+            const reg = await navigator.serviceWorker.ready;
+
+            // 1. Get VAPID Key
+            const keyRes = await api.get('/vapid-key');
+            if (!keyRes || !keyRes.publicKey) return;
+            const convertedKey = this.urlBase64ToUint8Array(keyRes.publicKey);
+
+            // 2. Subscribe
+            const sub = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: convertedKey
+            });
+
+            // 3. Send to Server
+            const subJSON = JSON.parse(JSON.stringify(sub));
+            await api.post('/subscribe', {
+                endpoint: subJSON.endpoint,
+                keys: subJSON.keys
+            });
+
+            console.log('[WebPush] Subscribed successfully');
+        } catch (err) {
+            console.error('[WebPush] Setup error:', err);
+        }
+    },
+
+    urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding)
+            .replace(/-/g, '+')
+            .replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
     },
 
     // Clean up old entries (run occasionally)
