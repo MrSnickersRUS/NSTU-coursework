@@ -310,16 +310,21 @@ const BookingWatcher = {
 
                 // Also check time-based completion for active bookings
                 if (currentStatus === 'active' && !this.notifiedBookings.has(bookingId)) {
-                    const [endHour, endMin] = booking.time_slot.split('-')[1].split(':').map(Number);
-                    const bookingDate = new Date(booking.booking_date);
-                    const endTime = new Date(bookingDate);
-                    endTime.setHours(endHour, endMin, 0, 0);
+                    // Safety check for time_slot
+                    if (!booking.time_slot || !booking.time_slot.includes('-')) {
+                        console.log('[BookingWatcher] Skipping booking without valid time_slot:', bookingId);
+                    } else {
+                        const [endHour, endMin] = booking.time_slot.split('-')[1].split(':').map(Number);
+                        const bookingDate = new Date(booking.booking_date);
+                        const endTime = new Date(bookingDate);
+                        endTime.setHours(endHour, endMin, 0, 0);
 
-                    if (now >= endTime) {
-                        console.log('[BookingWatcher] Time-based completion:', bookingId);
-                        this.sendWashingCompleteNotification(booking);
-                        this.notifiedBookings.add(bookingId);
-                        this.saveNotifiedBookings();
+                        if (now >= endTime) {
+                            console.log('[BookingWatcher] Time-based completion:', bookingId);
+                            this.sendWashingCompleteNotification(booking);
+                            this.notifiedBookings.add(bookingId);
+                            this.saveNotifiedBookings();
+                        }
                     }
                 }
 
