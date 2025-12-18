@@ -1,0 +1,55 @@
+# Backend - Go
+backend/**/*.exe
+backend/**/*.dll
+backend/**/*.so
+backend/**/*.dylib
+backend/**/*.test
+backend/**/*.out
+backend/go.work
+backend/tmp/
+
+# Frontend - не исключаем, всё нужно
+
+# Environment variables (КРИТИЧНО!)
+.env
+backend/.env
+*.env.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+data/
+postgres_data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+*.out
+
+# Docker volumes
+volumes/
+
+# Node modules (если будут)
+node_modules/
+package-lock.json
+
+# Temporary/Build artifacts
+dist/
+build/
+*.tmp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Gemini artifacts (твои заметки, не проект)
+.gemini/

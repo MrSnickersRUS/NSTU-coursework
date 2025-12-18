@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru" class="h-full bg-gray-100">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#07AB66">
+    <meta name="description" content="Сервис бронирования стиральных машин общежития НГТУ">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NETI WASH">
+
+    <!-- Cache Control для защищенных страниц -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    <link rel="manifest" href="/manifest.json">
+
+    <title>NETI WASH - Главная</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#07AB66',
+                        accent: '#DE093B',
+                        dark: '#2B2A29',
+                        warn: '#F2BA23',
+                        gray: { sec: '#676767', light: '#9C9C9C', bg: '#F5F5F5' },
+                        status: { success: '#07AB66', busy: '#DE093B', wait: '#F2BA23' }
+                    },
+                    boxShadow: {
+                        'custom': '0 4px 24px rgba(0, 0, 0, 0.06)',
+                        'card': '0 2px 12px rgba(0, 0, 0, 0.04)',
+                        'sheet': '0 -4px 24px rgba(0, 0, 0, 0.1)',
+                    },
+                    fontFamily: { sans: ['Manrope', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="fonts/fonts.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Manrope', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Sheet Transitions */
+        #bookingSheet,
+        #notificationSheet {
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: absolute;
+            /* Absolute to the main container */
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            /* Inherit full width of parent */
+            z-index: 60;
+            height: 50vh;
+            /* Half screen */
+        }
+
+        .sheet-open {
+            transform: translateY(0%) !important;
+        }
+
+        .sheet-closed {
+            transform: translateY(100%) !important;
+        }
+
+        #overlay {
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .overlay-open {
+            pointer-events: auto !important;
+            opacity: 1 !important;
+        }
+    </style>
+</head>
+
+<body class="h-full flex justify-center">
+
+    <div
+        class="w-full max-w-md lg:w-[40%] lg:max-w-none h-full bg-[#FAFAFA] shadow-2xl relative overflow-hidden flex flex-col">
+
+        <header class="sticky top-0 z-20 bg-[#FAFAFA]/95 backdrop-blur-sm px-5 py-4 flex justify-between items-center">
+            <div>
+                <div class="text-sm text-gray-sec font-medium">Доброе утро,</div>
+                <h1 class="text-2xl font-extrabold text-dark">Загрузка...</h1>
+            </div>
+            <button onclick="openNotificationSheet()" class="relative p-2 rounded-full active:bg-gray-100 transition">
+                <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M20.595 31.5C20.3313 31.9546 19.9528 32.332 19.4973 32.5943C19.0419 32.8566 18.5256 32.9947 18 32.9947C17.4744 32.9947 16.9581 32.8566 16.5027 32.5943C16.0472 32.332 15.6687 31.9546 15.405 31.5M27 12C27 9.61305 26.0518 7.32387 24.364 5.63604C22.6761 3.94821 20.3869 3 18 3C15.6131 3 13.3239 3.94821 11.636 5.63604C9.94821 7.32387 9 9.61305 9 12C9 22.5 4.5 25.5 4.5 25.5H31.5C31.5 25.5 27 22.5 27 12Z"
+                        stroke="#2B2A29" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span
+                    class="absolute top-2 right-2 h-2.5 w-2.5 bg-accent rounded-full border-2 border-[#FAFAFA]"></span>
+            </button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto pb-24 px-5 space-y-8 pt-2 no-scrollbar">
+
+            <div class="bg-white rounded-[20px] p-5 shadow-custom border border-gray-100 relative overflow-hidden">
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="text-lg font-bold text-dark">Мои брони</h3>
+                        <p class="text-sm text-gray-sec mt-0.5">Активных стирок: <span
+                                class="font-bold text-primary">1</span></p>
+                    </div>
+                    <div class="h-10 w-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <svg class="animate-spin" width="20" height="20" viewBox="0 0 28 28" fill="none"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M7 14C8.45366 11.5772 11.8775 11.3469 13.6426 13.5532L14.3574 14.4468C16.1225 16.6531 19.5463 16.4228 21 14"
+                                stroke="#07AB66" stroke-width="2.5" stroke-linecap="round" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="w-full bg-gray-100 rounded-full h-1.5 mb-4">
+                    <div class="bg-primary h-1.5 rounded-full" style="width: 60%"></div>
+                </div>
+
+                <a href="bookings.html"
+                    class="flex items-center justify-between w-full py-3 px-4 bg-[#F9F9F9] rounded-xl active:scale-[0.98] transition-transform duration-100">
+                    <span class="text-sm font-bold text-dark">Перейти к деталям</span>
+                    <svg width="24" height="24" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        class="rotate-180">
+                        <path d="M22.5 27L13.5 18L22.5 9" stroke="#2B2A29" stroke-width="3" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </a>
+            </div>
+
+            <div>
+                <h2 class="text-lg font-extrabold text-dark mb-4">Доступные машинки</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="openBookingSheet('Машинка #1')"
+                        class="bg-white p-4 rounded-[20px] shadow-card border border-gray-100 flex flex-col items-center text-center active:scale-[0.97] transition-transform duration-100">
+                        <div
+                            class="h-14 w-14 bg-[#E8F8F3] rounded-full flex items-center justify-center mb-3 text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="2" width="16" height="20" rx="2" />
+                                <circle cx="12" cy="12" r="5" />
+                                <path d="M12 12h.01" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-dark text-base">Машинка #1</h3>
+                        <div class="flex items-center gap-1.5 mt-1.5 mb-4">
+                            <span class="w-1.5 h-1.5 rounded-full bg-status-success"></span>
+                            <span class="text-xs font-bold text-status-success">Свободна</span>
+                        </div>
+                        <div
+                            class="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20">
+                            Занять</div>
+                    </button>
+
+                    <button onclick="openBookingSheet('Машинка #2')"
+                        class="bg-white p-4 rounded-[20px] shadow-card border border-gray-100 flex flex-col items-center text-center active:scale-[0.97] transition-transform duration-100">
+                        <div
+                            class="h-14 w-14 bg-[#E8F8F3] rounded-full flex items-center justify-center mb-3 text-primary">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="2" width="16" height="20" rx="2" />
+                                <circle cx="12" cy="12" r="5" />
+                                <path d="M12 12h.01" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-dark text-base">Машинка #2</h3>
+                        <div class="flex items-center gap-1.5 mt-1.5 mb-4">
+                            <span class="w-1.5 h-1.5 rounded-full bg-status-success"></span>
+                            <span class="text-xs font-bold text-status-success">Свободна</span>
+                        </div>
+                        <div
+                            class="w-full py-2.5 rounded-xl bg-primary text-white text-sm font-bold shadow-lg shadow-primary/20">
+                            Занять</div>
+                    </button>
+
+                    <div
+                        class="bg-white p-4 rounded-[20px] shadow-card border border-gray-100 flex flex-col items-center text-center opacity-70">
+                        <div class="h-14 w-14 bg-red-50 rounded-full flex items-center justify-center mb-3 text-accent">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="2" width="16" height="20" rx="2" />
+                                <circle cx="12" cy="12" r="5" />
+                                <path d="M9 12h6" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-dark text-base">Машинка #3</h3>
+                        <div class="flex items-center gap-1.5 mt-1.5 mb-4">
+                            <span class="w-1.5 h-1.5 rounded-full bg-status-busy"></span>
+                            <span class="text-xs font-bold text-status-busy">Занята</span>
+                        </div>
+                        <button disabled
+                            class="w-full py-2.5 rounded-xl bg-gray-100 text-gray-400 text-sm font-bold cursor-not-allowed">Недоступна</button>
+                    </div>
+
+                    <div
+                        class="bg-white p-4 rounded-[20px] shadow-card border border-gray-100 flex flex-col items-center text-center opacity-60 grayscale">
+                        <div
+                            class="h-14 w-14 bg-gray-100 rounded-full flex items-center justify-center mb-3 text-gray-400">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="2" width="16" height="20" rx="2" />
+                                <path d="M8 8l8 8M16 8l-8 8" />
+                            </svg>
+                        </div>
+                        <h3 class="font-bold text-dark text-base">Машинка #4</h3>
+                        <div class="flex items-center gap-1.5 mt-1.5 mb-4">
+                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                            <span class="text-xs font-bold text-gray-400">Ремонт</span>
+                        </div>
+                        <button disabled
+                            class="w-full py-2.5 rounded-xl bg-gray-100 text-gray-400 text-sm font-bold cursor-not-allowed">Недоступна</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <nav
+            class="sticky bottom-0 w-full bg-white border-t border-gray-200/60 px-6 py-3 flex justify-between items-center z-40">
+            <a href="main.html" class="flex flex-col items-center gap-1 w-16 group cursor-pointer">
+                <div class="text-primary"><svg width="28" height="28" viewBox="0 0 34 34" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M12.75 31.1666V17H21.25V31.1666M4.25 12.75L17 2.83331L29.75 12.75V28.3333C29.75 29.0848 29.4515 29.8054 28.9201 30.3368C28.3888 30.8681 27.6681 31.1666 26.9167 31.1666H7.08333C6.33189 31.1666 5.61122 30.8681 5.07986 30.3368C4.54851 29.8054 4.25 29.0848 4.25 28.3333V12.75Z" />
+                    </svg></div>
+                <span class="text-[10px] font-bold text-primary">Главная</span>
+            </a>
+            <a href="bookings.html" class="flex flex-col items-center gap-1 w-16 group cursor-pointer">
+                <div class="text-gray-light group-hover:text-dark transition"><svg width="28" height="28"
+                        viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M11.3333 8.5H29.75M11.3333 17H29.75M11.3333 25.5H29.75M4.25 8.5H4.26417M4.25 17H4.26417M4.25 25.5H4.26417" />
+                    </svg></div>
+                <span class="text-[10px] font-medium text-gray-light group-hover:text-dark transition">Брони</span>
+            </a>
+            <a href="profile.html" class="flex flex-col items-center gap-1 w-16 group cursor-pointer">
+                <div class="text-gray-light group-hover:text-dark transition"><svg width="28" height="28"
+                        viewBox="0 0 34 34" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M28.3334 29.75V26.9167C28.3334 25.4138 27.7364 23.9724 26.6737 22.9097C25.611 21.847 24.1696 21.25 22.6667 21.25H11.3334C9.83052 21.25 8.38918 21.847 7.32648 22.9097C6.26377 23.9724 5.66675 25.4138 5.66675 26.9167V29.75M22.6667 9.91667C22.6667 13.0463 20.1297 15.5833 17.0001 15.5833C13.8705 15.5833 11.3334 13.0463 11.3334 9.91667C11.3334 6.78705 13.8705 4.25 17.0001 4.25C20.1297 4.25 22.6667 6.78705 22.6667 9.91667Z" />
+                    </svg></div>
+                <span class="text-[10px] font-medium text-gray-light group-hover:text-dark transition">Профиль</span>
+            </a>
+        </nav>
+
+        <div id="overlay" onclick="closeBookingSheet(); closeNotificationSheet();"
+            class="fixed inset-0 bg-black/40 z-50 backdrop-blur-sm"></div>
+
+        <div id="bookingSheet" class="sheet-closed bg-white rounded-t-[30px] shadow-sheet max-h-none overflow-hidden">
+            <div class="w-full flex justify-center pt-3 pb-1">
+                <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+
+            <div class="px-6 pb-8 pt-2">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="sheetTitle" class="text-xl font-extrabold text-dark">Бронирование</h2>
+                    <button onclick="closeBookingSheet()" class="p-2 bg-gray-100 rounded-full">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2B2A29" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 6L6 18M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-dark mb-3">Выберите дату</label>
+                    <div class="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+                        <!-- Dates generated by JS -->
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-dark mb-3">Выберите время</label>
+                    <div id="timesContainer" class="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+                        <!-- Times generated by JS -->
+                    </div>
+                </div>
+
+                <button onclick="submitBooking()"
+                    class="w-full py-4 rounded-xl bg-primary text-white text-base font-bold shadow-xl shadow-primary/30 active:scale-[0.98] transition-transform">
+                    Подтвердить бронь
+                </button>
+            </div>
+        </div>
+
+        <div id="notificationSheet"
+            class="sheet-closed bg-white rounded-t-[30px] shadow-sheet max-h-none overflow-y-auto">
+            <div class="w-full flex justify-center pt-3 pb-1">
+                <div class="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+
+            <div class="px-6 pb-8 pt-2">
+                <div class="flex justify-between items-center mb-6">
+                    <h1 class="text-3xl font-extrabold text-dark tracking-tight leading-tight">Добро утро,<br>
+                        Загрузка... 👋</h1>
+                    <div class="relative cursor-pointer hover:bg-gray-100 p-2 rounded-full transition-colors"
+                        onclick="openNotificationSheet()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2B2A29" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <div id="notification-badge"
+                            class="absolute top-2 right-2 w-2.5 h-2.5 bg-accent border-2 border-white rounded-full">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Mock Notification Items -->
+                    <div class="flex items-start gap-4 p-4 bg-green-50 rounded-2xl border border-green-100">
+                        <div
+                            class="h-10 w-10 bg-white rounded-full flex items-center justify-center text-primary shadow-sm flex-shrink-0">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-dark text-sm">Стирка завершена!</h4>
+                            <p class="text-xs text-gray-sec mt-1">Машинка #2 закончила работу. Заберите вещи.</p>
+                            <span class="text-[10px] text-gray-400 mt-2 block">10 минут назад</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                        <div
+                            class="h-10 w-10 bg-white rounded-full flex items-center justify-center text-gray-400 shadow-sm flex-shrink-0">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="8" x2="12" y2="12"></line>
+                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-dark text-sm">Технические работы</h4>
+                            <p class="text-xs text-gray-sec mt-1">Завтра с 10:00 до 12:00 прачечная закрыта.</p>
+                            <span class="text-[10px] text-gray-400 mt-2 block">Вчера</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/api.js?v=2"></script>
+        <script src="js/auth-guard.js"></script>
+        <script src="js/dashboard.js"></script>
+        <script src="js/ui-utils.js"></script>
+        <script src="js/pwa.js"></script>
+</body>
+
+</html>
