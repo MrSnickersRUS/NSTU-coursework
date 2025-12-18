@@ -110,54 +110,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         }, 2000);
                     }
                 } else {
-                    // Old behavior - auto login (shouldn't happen now)
+                    // Old behavior - auto login
                     handleLoginSuccess(response);
                 }
             } catch (error) {
-                if (isMock(error)) {
-                    alert('Регистрация успешна! (Mock)');
-                    window.location.href = 'index.html';
-                } else {
-                    showToast(error.message, true);
-                }
+                showToast(error.message, true);
             } finally {
                 setLoading(submitBtn, false, 'Зарегистрироваться');
             }
         });
     }
-
-
-    // --- FORGOT PASSWORD FORM ---
-    // NOTE: Forgot password logic is now in forgot-password.html directly
-    // This section is kept for backwards compatibility but should not be used
-    /*
-    const forgotForm = document.getElementById('forgotForm');
-    if (forgotForm) {
-        forgotForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('forgot-email').value;
-            const submitBtn = forgotForm.querySelector('button');
-
-            if (!email) return alert('Введите почту');
-
-            setLoading(submitBtn, true, 'Отправка...');
-            try {
-                await api.post('/forgot-password', { email });
-                alert('Код отправлен на почту!');
-                window.location.href = 'reset-password.html';
-            } catch (error) {
-                if (isMock(error)) {
-                    alert('Код отправлен на почту! (Mock)');
-                    window.location.href = 'reset-password.html';
-                } else {
-                    alert('Ошибка: ' + error.message);
-                }
-            } finally {
-                setLoading(submitBtn, false, 'Отправить код');
-            }
-        });
-    }
-    */
 
     // --- RESET PASSWORD FORM ---
     const resetForm = document.getElementById('resetForm');
@@ -176,12 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Пароль изменен! Войдите с новым паролем.');
                 window.location.href = 'index.html';
             } catch (error) {
-                if (isMock(error)) {
-                    alert('Пароль изменен! (Mock)');
-                    window.location.href = 'index.html';
-                } else {
-                    alert('Ошибка: ' + error.message);
-                }
+                alert('Ошибка: ' + error.message);
             } finally {
                 setLoading(submitBtn, false, 'Сменить пароль');
             }
@@ -219,15 +176,4 @@ function handleLoginSuccess(response) {
     } else {
         throw new Error('Token not received');
     }
-}
-
-function isMock(error) {
-    return error.message.includes('Failed to fetch') || error.message.includes('JSON');
-}
-
-function mockLogin() {
-    console.warn('Backend unavailable. Using Mock Mode.');
-    api.setToken('mock_token_123');
-    api.setUserInfo({ name: 'Artem', email: 'test@neti.ru', role: 'user' });
-    window.location.href = 'main.html';
 }

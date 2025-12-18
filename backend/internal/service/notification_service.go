@@ -43,10 +43,11 @@ func NewNotificationService(repo *repository.PushRepository, bookingRepo *reposi
 	}
 
 	return &NotificationService{
-		repo:       repo,
-		vapidOne:   priv,
-		vapidTwo:   pub,
-		vapidEmail: email,
+		repo:        repo,
+		bookingRepo: bookingRepo,
+		vapidOne:    priv,
+		vapidTwo:    pub,
+		vapidEmail:  email,
 	}
 }
 
