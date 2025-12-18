@@ -60,7 +60,7 @@ func main() {
 	machineHandler := handlers.NewMachineHandler(machineRepo)
 
 	bookingRepo := repository.NewBookingRepository(dbPool)
-	bookingService := service.NewBookingService(bookingRepo, machineRepo)
+	bookingService := service.NewBookingService(bookingRepo)
 	bookingHandler := handlers.NewBookingHandler(bookingService)
 
 	// Notification Dependencies (Web Push)
