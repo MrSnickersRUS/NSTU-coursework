@@ -4,10 +4,12 @@ const PWAManager = {
     isInstalled: false,
 
     init() {
+        console.log('[PWA] Initializing...');
         this.registerServiceWorker();
         this.handleInstallPrompt();
         this.checkIfInstalled();
         this.initNotificationPermission();
+        console.log('[PWA] Init complete. isInstalled:', this.isInstalled);
     },
 
     // Register Service Worker
