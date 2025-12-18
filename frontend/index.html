@@ -30,11 +30,16 @@
             font-family: 'Manrope', sans-serif;
         }
 
-        /* Плавность для инпутов */
         input {
             transition: all 0.2s ease-in-out;
         }
     </style>
+    <script>
+        // Auto-redirect if already logged in
+        if (localStorage.getItem('netiwash_token')) {
+            window.location.replace('main.html');
+        }
+    </script>
 </head>
 
 <body class="h-full flex items-center justify-center p-4">

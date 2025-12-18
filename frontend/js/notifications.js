@@ -246,11 +246,23 @@ const BookingWatcher = {
     startWatching() {
         if (this.checkInterval) return;
 
+        // Check immediately
+        this.checkBookings();
+
+        // Check on visibility change (when user opens app)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('[BookingWatcher] App visible, checking immediately');
+                this.checkBookings();
+            }
+        });
+
+        // Periodic check
         this.checkInterval = setInterval(() => {
             this.checkBookings();
-        }, 15000); // Check every 15 seconds
+        }, 15000); // Check every 15 sec
 
-        console.log('[BookingWatcher] Started watching bookings');
+        console.log('[BookingWatcher] Started watching');
     },
 
     stopWatching() {
