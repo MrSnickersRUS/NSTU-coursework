@@ -1,3 +1,57 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom arbitrary values that Tailwind CLI doesn't generate */
+.rounded-\[20px\] {
+    border-radius: 20px;
+}
+
+.rounded-\[30px\] {
+    border-radius: 30px;
+}
+
+.rounded-t-\[30px\] {
+    border-top-left-radius: 30px;
+    border-top-right-radius: 30px;
+}
+
+.bg-\[\#FAFAFA\] {
+    background-color: #FAFAFA;
+}
+
+.border-\[\#FAFAFA\] {
+    border-color: #FAFAFA;
+}
+
+.text-\[10px\] {
+    font-size: 10px;
+}
+
+.shadow-sheet {
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-card {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.bg-gray-bg {
+    background-color: #F5F5F5;
+}
+
+.text-gray-sec {
+    color: #676767;
+}
+
+.text-status-success {
+    color: #07AB66;
+}
+
+.text-status-busy {
+    color: #DE093B;
+}
+
+.text-status-wait {
+    color: #F2BA23;
+}
