@@ -202,15 +202,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // Global function for install button
 window.installPWA = () => PWAManager.promptInstall();
 
-// CSS for animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slide-up {
-        from { transform: translateY(100px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
-    .animate-slide-up {
-        animation: slide-up 0.3s ease-out;
-    }
-`;
-document.head.appendChild(style);
+// CSS for animation (wrapped in IIFE to avoid variable conflicts)
+(function () {
+    const pwaStyle = document.createElement('style');
+    pwaStyle.textContent = `
+        @keyframes slide-up {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up {
+            animation: slide-up 0.3s ease-out;
+        }
+    `;
+    document.head.appendChild(pwaStyle);
+})();
