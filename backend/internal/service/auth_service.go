@@ -26,7 +26,6 @@ func NewAuthService(repo *repository.UserRepository, jwtSecret string, emailServ
 	}
 }
 
-// Register регистрирует нового пользователя и отправляет email подтверждения
 func (s *AuthService) Register(ctx context.Context, req *models.RegisterRequest) (*models.AuthResponse, error) {
 	if !utils.ValidateEmailFormat(req.Email) {
 		return nil, errors.New("invalid email format")
@@ -78,7 +77,6 @@ func (s *AuthService) Register(ctx context.Context, req *models.RegisterRequest)
 	return &response, nil
 }
 
-// Login аутентифицирует пользователя и возвращает JWT токен
 func (s *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*models.AuthResponse, error) {
 	user, err := s.repo.GetByEmailOrLogin(ctx, req.Login)
 	if err != nil || user == nil {
@@ -88,11 +86,6 @@ func (s *AuthService) Login(ctx context.Context, req *models.LoginRequest) (*mod
 	if !utils.CheckPassword(req.Password, user.PasswordHash) {
 		return nil, errors.New("invalid email/login or password")
 	}
-
-	// Email verification disabled for coursework demo/testing
-	// if !user.EmailVerified && user.Role != "superadmin" {
-	// 	return nil, errors.New("email not verified")
-	// }
 
 	token, err := utils.GenerateToken(user.ID, user.Role, s.jwtSecret)
 	if err != nil {
@@ -125,8 +118,6 @@ func (s *AuthService) RequestPasswordReset(ctx context.Context, email string) er
 
 	user, err := s.repo.GetByEmail(ctx, email)
 	if err != nil || user == nil {
-		log.Printf("📧 [PASSWORD_RESET] User not found or error: %v", err)
-		// Don't reveal if user exists (security)
 		return nil
 	}
 
@@ -144,7 +135,6 @@ func (s *AuthService) RequestPasswordReset(ctx context.Context, email string) er
 
 	log.Printf("📧 [PASSWORD_RESET] Token saved for user %d, expires: %v", user.ID, expiry)
 
-	// Send reset email (non-blocking)
 	go func() {
 		err := s.emailService.SendPasswordResetEmail(user.Email, resetToken)
 		if err != nil {

@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // If already logged in AND is admin, redirect to admin dashboard
     const token = api.getToken();
     const user = api.getUserInfo();
 
@@ -22,19 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = Object.fromEntries(formData.entries());
 
             try {
-                // Use standard login
                 const response = await api.post('/auth/login', {
                     login: data.login,
                     password: data.password
                 });
 
-                // Check role
                 if (response.user.role !== 'admin' && response.user.role !== 'superadmin') {
                     throw new Error('У вас нет прав администратора');
                 }
 
                 api.setToken(response.token);
-                // Ensure login field is populated from name
                 api.setUserInfo({
                     ...response.user,
                     login: response.user.name,

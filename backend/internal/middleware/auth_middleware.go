@@ -20,7 +20,6 @@ func NewAuthMiddleware(jwtSecret string) *AuthMiddleware {
 	}
 }
 
-// RequireAuth checks for valid JWT
 func (m *AuthMiddleware) RequireAuth(c *gin.Context) {
 	tokenString, err := extractToken(c)
 	if err != nil {
@@ -34,16 +33,13 @@ func (m *AuthMiddleware) RequireAuth(c *gin.Context) {
 		return
 	}
 
-	// Store user info in context
 	c.Set("userID", claims.UserID)
 	c.Set("role", claims.Role)
 	c.Next()
 }
 
-// RequireRole checks if user has specific role
 func (m *AuthMiddleware) RequireRole(roles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Must be authenticated first (or check context if Auth middleware ran)
 		userRole, exists := c.Get("role")
 		if !exists {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})

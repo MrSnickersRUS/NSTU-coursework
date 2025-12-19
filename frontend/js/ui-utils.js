@@ -1,4 +1,3 @@
-// Basic Toast Notification
 window.showToast = (message, isError = false) => {
     let toast = document.getElementById('custom-toast');
     if (!toast) {
@@ -11,20 +10,16 @@ window.showToast = (message, isError = false) => {
     toast.className = `fixed top-5 left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-xl shadow-2xl transition-all duration-300 ${isError ? 'bg-accent text-white' : 'bg-dark text-white'}`;
     toast.innerText = message;
 
-    // Show
     setTimeout(() => {
         toast.classList.remove('opacity-0', 'translate-y-[-10px]');
     }, 10);
 
-    // Hide
     setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-y-[-10px]');
     }, 3000);
 }
 
-// Custom Modal (Replacement for alert/confirm)
 window.showModal = (title, message, onConfirm = null) => {
-    // Remove existing
     const existing = document.getElementById('custom-modal-overlay');
     if (existing) existing.remove();
 
@@ -55,7 +50,6 @@ window.showModal = (title, message, onConfirm = null) => {
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // Handlers
     const close = () => overlay.remove();
 
     if (onConfirm) {
@@ -69,7 +63,6 @@ window.showModal = (title, message, onConfirm = null) => {
     }
 }
 
-// Inject styles for generic animations if missing
 const style = document.createElement('style');
 style.innerHTML = `
 @keyframes pop-in {

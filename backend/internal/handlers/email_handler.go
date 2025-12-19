@@ -21,7 +21,6 @@ func NewEmailHandler(authService *service.AuthService, emailService *utils.Email
 	}
 }
 
-// VerifyEmail подтверждает email пользователя по токену
 func (h *EmailHandler) VerifyEmail(c *gin.Context) {
 	token := c.Query("token")
 	if token == "" {
@@ -37,7 +36,6 @@ func (h *EmailHandler) VerifyEmail(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Email успешно подтвержден"})
 }
 
-// ForgotPassword инициирует процесс сброса пароля
 func (h *EmailHandler) ForgotPassword(c *gin.Context) {
 	var req struct {
 		Email string `json:"email" binding:"required,email"`
@@ -56,7 +54,6 @@ func (h *EmailHandler) ForgotPassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Письмо для сброса пароля отправлено"})
 }
 
-// ResetPassword сбрасывает пароль пользователя
 func (h *EmailHandler) ResetPassword(c *gin.Context) {
 	var req struct {
 		Token       string `json:"token" binding:"required"`

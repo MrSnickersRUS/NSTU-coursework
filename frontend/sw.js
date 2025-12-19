@@ -72,38 +72,14 @@ self.addEventListener('fetch', (event) => {
     );
 });
 
-// Push notifications (если нужно в будущем)
-self.addEventListener('push', (event) => {
-    const data = event.data ? event.data.json() : {};
-    const title = data.title || 'NETI WASH';
-    const options = {
-        body: data.body || 'Новое уведомление',
-        icon: '/icons/icon-192x192.png',
-        badge: '/icons/icon-72x72.png',
-        vibrate: [200, 100, 200],
-        data: data.url || '/main.html'
-    };
 
-    event.waitUntil(
-        self.registration.showNotification(title, options)
-    );
-});
-
-// Notification click
-self.addEventListener('notificationclick', (event) => {
-    event.notification.close();
-    event.waitUntil(
-        clients.openWindow(event.notification.data || '/main.html')
-    );
-});
-// Обработка Push уведомлений
 self.addEventListener('push', function (event) {
     if (event.data) {
         let payload = {};
         try {
             payload = event.data.json();
         } catch (e) {
-            // Fallback for plain text
+            // Фоллбэк для текста
             payload = { title: 'NETI WASH', body: event.data.text() };
         }
 

@@ -1,4 +1,3 @@
-// Admin Bookings Page Logic
 document.addEventListener('DOMContentLoaded', async () => {
     const bookingsContainer = document.getElementById('bookingsContainer');
     const searchInput = document.getElementById('searchInput');
@@ -26,8 +25,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const statusClass = isActive ? 'bg-green-100 text-primary' : 'bg-gray-100 text-gray-500';
             const statusText = isActive ? 'Активен' : 'Завершен';
             const cardClass = isActive ? '' : 'opacity-70';
-
-            // Format dates
             const startTime = new Date(booking.start_time);
             const endTime = new Date(booking.end_time);
             const dateStr = startTime.toLocaleString('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' });
@@ -72,7 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
-    // Search functionality
     if (searchInput) {
         searchInput.addEventListener('input', async (e) => {
             const query = e.target.value.toLowerCase();
@@ -88,11 +84,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadBookings();
 
-    // Refresh every 10 seconds
     setInterval(loadBookings, 10000);
 });
 
-// Complete booking (early finish)
 async function completeBooking(id) {
     if (!confirm('Завершить бронь досрочно? Клиент получит уведомление.')) {
         return;
@@ -113,7 +107,6 @@ async function completeBooking(id) {
             alert('Бронь завершена!');
         }
 
-        // Reload bookings
         location.reload();
     } catch (error) {
         console.error('Error completing booking:', error);
@@ -125,7 +118,6 @@ async function completeBooking(id) {
     }
 }
 
-// Cancel/delete booking
 async function cancelBooking(id) {
     if (!confirm('Удалить эту бронь?')) {
         return;
@@ -139,8 +131,6 @@ async function cancelBooking(id) {
         } else {
             alert('Бронь удалена!');
         }
-
-        // Reload bookings
         location.reload();
     } catch (error) {
         console.error('Error cancelling booking:', error);

@@ -4,7 +4,7 @@ ENV GOTOOLCHAIN=auto
 
 WORKDIR /app
 
-# Copy backend folder (contains go.mod and source)
+# Copy backend source
 COPY backend/ ./
 
 # Download dependencies
@@ -18,7 +18,7 @@ FROM alpine:latest
 
 WORKDIR /root/
 
-# Install ca-certificates for HTTPS
+# Install certificates
 RUN apk --no-cache add ca-certificates
 
 # Copy binary from builder
@@ -27,7 +27,7 @@ COPY --from=builder /app/server .
 # Copy migrations
 COPY --from=builder /app/migrations ./migrations
 
-# Copy frontend files (served by Go server)
+# Copy frontend
 COPY frontend/ ./frontend/
 
 # Expose port

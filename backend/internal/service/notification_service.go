@@ -15,13 +15,12 @@ import (
 type NotificationService struct {
 	repo        *repository.PushRepository
 	bookingRepo *repository.BookingRepository
-	vapidOne    string // Private key
-	vapidTwo    string // Public key
+	vapidOne    string // приватный ключ
+	vapidTwo    string // публичный
 	vapidEmail  string
 }
 
 func NewNotificationService(repo *repository.PushRepository, bookingRepo *repository.BookingRepository) *NotificationService {
-	// Try to get keys from ENV, otherwise generate
 	priv := os.Getenv("VAPID_PRIVATE_KEY")
 	pub := os.Getenv("VAPID_PUBLIC_KEY")
 	email := os.Getenv("VAPID_EMAIL")
@@ -30,25 +29,11 @@ func NewNotificationService(repo *repository.PushRepository, bookingRepo *reposi
 		email = "mailto:admin@neti.ru"
 	}
 
-	// Default keys (generated via npx web-push) for stability across deploys
 	if priv == "" {
 		priv = "MCkShAz8ggYo3uq8j5wMHfmv0fSZgvLaRC0j0YaCaUk"
 	}
 	if pub == "" {
 		pub = "BIV66_T0YefjdnM4JUXri7hD8m9cn_mRLcHYlEQJ5B4NcLo2UnPelrzJcbQd_6sTCHf9n0583IKwPzxdqqBFjM0"
-	}
-	// ... (rest of key generation if somehow still empty)
-
-	// ...
-
-	for _, b := range unnotified {
-		log.Printf("🤖 [WORKER] Sending push for booking %d", b.ID)
-
-		// Send JSON payload
-		msg := fmt.Sprintf(`{"title": "Стирка #%d завершена!", "body": "Не забудьте забрать вещи.", "url": "bookings.html"}`, b.ID)
-		s.SendNotification(ctx, b.UserID, msg)
-
-		s.bookingRepo.MarkPushSent(ctx, b.ID)
 	}
 
 	return &NotificationService{
@@ -82,7 +67,7 @@ func (s *NotificationService) SendNotification(ctx context.Context, userID int, 
 	}
 
 	if len(subs) == 0 {
-		return // No subscriptions
+		return
 	}
 
 	log.Printf("[PUSH] Sending to %d devices for user %d", len(subs), userID)
@@ -101,7 +86,6 @@ func (s *NotificationService) sendToSubscription(sub models.PushSubscription, me
 		},
 	}
 
-	// Send Notification
 	resp, err := webpush.SendNotification([]byte(message), sObj, &webpush.Options{
 		Subscriber:      s.vapidEmail,
 		VAPIDPublicKey:  s.vapidTwo,
@@ -115,9 +99,7 @@ func (s *NotificationService) sendToSubscription(sub models.PushSubscription, me
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 201 {
-		// Success
 	} else if resp.StatusCode == 410 {
-		// Subscription gone, should delete (TODO)
 		log.Printf("[PUSH] Subscription expired/gone")
 	} else {
 		log.Printf("[PUSH] Unexpected status code: %d", resp.StatusCode)
@@ -140,18 +122,14 @@ func (s *NotificationService) StartWorker(ctx context.Context) {
 }
 
 func (s *NotificationService) checkAndNotify(ctx context.Context) {
-	// 1. Find expired active bookings -> make them completed
 	activeExpired, err := s.bookingRepo.GetExpiredActiveBookings(ctx)
 	if err == nil {
 		for _, b := range activeExpired {
 			log.Printf("🤖 [WORKER] Auto-completing booking %d", b.ID)
 			s.bookingRepo.UpdateStatus(ctx, b.ID, "completed")
-			// Note: We don't mark push_sent here, so next step picks it up
-			// Or we can send here immediately.
 		}
 	}
 
-	// 2. Find completed but unnotified bookings -> send push
 	unnotified, err := s.bookingRepo.GetCompletedUnnotifiedBookings(ctx)
 	if err != nil {
 		log.Printf("🤖 [WORKER] Error checking bookings: %v", err)

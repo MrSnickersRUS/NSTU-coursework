@@ -1,63 +1,35 @@
-/**
- * Core API Service for NETI WASH
- */
 class ApiService {
     constructor() {
-        // Base URL for backend API. 
-        // Since frontend server proxies /api to backend, we just use /api
         this.baseUrl = '/api';
     }
 
-    /**
-     * Get Auth Token from local storage (persistent)
-     */
     getToken() {
         return localStorage.getItem('netiwash_token');
     }
 
-    /**
-     * Save Auth Token (persistent)
-     */
     setToken(token) {
         localStorage.setItem('netiwash_token', token);
     }
 
-    /**
-     * Clear Auth Token (Logout)
-     */
     logout() {
         localStorage.removeItem('netiwash_token');
         localStorage.removeItem('netiwash_user_info');
-        // Keep notification settings
-
-        // Clear history to prevent back button
         if (window.history && window.history.pushState) {
             window.history.pushState(null, '', 'index.html');
             window.history.pushState(null, '', 'index.html');
             window.history.back();
         }
 
-        // Redirect with no-cache headers simulation
         window.location.replace('index.html');
     }
 
-    /**
-     * Get User Info (persistent)
-     */
     getUserInfo() {
         return JSON.parse(localStorage.getItem('netiwash_user_info') || '{}');
     }
-
-    /**
-     * Save User Info (persistent)
-     */
     setUserInfo(userInfo) {
         localStorage.setItem('netiwash_user_info', JSON.stringify(userInfo));
     }
 
-    /**
-     * Generic fetch wrapper
-     */
     async request(endpoint, method = 'GET', body = null) {
         const headers = {
             'Content-Type': 'application/json',
@@ -80,18 +52,14 @@ class ApiService {
         try {
             const response = await fetch(`${this.baseUrl}${endpoint}`, config);
 
-            // Handle 401 Unauthorized globally
-            // Handle 401 Unauthorized globally but preserve error message
             if (response.status === 401) {
                 let errorMessage = 'Unauthorized';
                 try {
                     const errorData = await response.json();
                     errorMessage = errorData.message || errorData.error || 'Неверный логин или пароль';
                 } catch (e) {
-                    // ignore json parse error
                 }
 
-                // Only redirect if not already on login page (user or admin)
                 const path = window.location.pathname;
                 const isLoginPage = path.includes('index.html') || path.includes('admin_login.html') || path === '/' || path.endsWith('/');
 
@@ -101,7 +69,7 @@ class ApiService {
                 throw new Error(errorMessage);
             }
 
-            const data = await response.json().catch(() => ({})); // Handle empty responses
+            const data = await response.json().catch(() => ({}));
 
             if (!response.ok) {
                 throw new Error(data.message || data.error || `Error ${response.status}`);
@@ -113,8 +81,6 @@ class ApiService {
             throw error;
         }
     }
-
-    // Convenience methods
     get(endpoint) { return this.request(endpoint, 'GET'); }
     post(endpoint, body) { return this.request(endpoint, 'POST', body); }
     put(endpoint, body) { return this.request(endpoint, 'PUT', body); }

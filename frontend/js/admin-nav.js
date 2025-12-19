@@ -1,8 +1,3 @@
-/**
- * Admin Navigation Component
- * Populates the #adminSidebar with navigation links
- */
-
 function createAdminNavContent(currentPage) {
     const pages = {
         dashboard: {
@@ -112,5 +107,4 @@ function initAdminNav() {
     }
 }
 
-// Auto-initialize
 document.addEventListener('DOMContentLoaded', initAdminNav);

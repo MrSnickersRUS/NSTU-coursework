@@ -16,7 +16,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Apply migration
 	migration := `
 		ALTER TABLE users 
 		ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE,

@@ -34,11 +34,9 @@ func ConnectDB(connStr string) (*pgxpool.Pool, error) {
 	return pool, nil
 }
 
-// RunMigrations creates tables and seeds initial data
 func RunMigrations(pool *pgxpool.Pool) error {
 	ctx := context.Background()
 
-	// Create tables
 	schema := `
 	CREATE TABLE IF NOT EXISTS users (
 		id SERIAL PRIMARY KEY,
@@ -103,7 +101,6 @@ func RunMigrations(pool *pgxpool.Pool) error {
 	}
 	log.Println("✅ Database schema created/verified")
 
-	// Seed machines if empty
 	var machineCount int
 	pool.QueryRow(ctx, "SELECT COUNT(*) FROM machines").Scan(&machineCount)
 	if machineCount == 0 {
@@ -121,7 +118,6 @@ func RunMigrations(pool *pgxpool.Pool) error {
 		}
 	}
 
-	// Seed superadmin if not exists
 	var adminExists bool
 	err = pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM users WHERE role = 'superadmin')").Scan(&adminExists)
 	if err != nil {
@@ -130,7 +126,6 @@ func RunMigrations(pool *pgxpool.Pool) error {
 	log.Printf("🔍 Superadmin check: exists=%v", adminExists)
 
 	if !adminExists {
-		// Generate secure random password
 		randomLoginBytes := make([]byte, 16)
 		randomPasswordBytes := make([]byte, 16)
 		if _, err := rand.Read(randomLoginBytes); err != nil {
@@ -140,9 +135,8 @@ func RunMigrations(pool *pgxpool.Pool) error {
 			return fmt.Errorf("failed to generate random password: %w", err)
 		}
 		adminLogin := "admin_" + hex.EncodeToString(randomLoginBytes)[:6]
-		adminPassword := hex.EncodeToString(randomPasswordBytes)[:12] // 12 character password
+		adminPassword := hex.EncodeToString(randomPasswordBytes)[:12]
 
-		// Hash the password
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
 		if err != nil {
 			return fmt.Errorf("failed to hash admin password: %w", err)

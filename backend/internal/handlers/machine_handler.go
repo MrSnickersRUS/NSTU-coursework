@@ -25,15 +25,13 @@ func (h *MachineHandler) GetAll(c *gin.Context) {
 		return
 	}
 
-	// Return empty array instead of null if no machines
 	if machines == nil {
-		machines = []models.Machine{} // Need import models if used types explicitly, but here we passed nil slice which marshals to null usually, better safe
+		machines = []models.Machine{}
 	}
 
 	c.JSON(http.StatusOK, machines)
 }
 
-// PUT /api/machines/:id
 func (h *MachineHandler) UpdateStatus(c *gin.Context) {
 	id := c.Param("id")
 
@@ -46,7 +44,6 @@ func (h *MachineHandler) UpdateStatus(c *gin.Context) {
 		return
 	}
 
-	// Convert id to int
 	machineID, err := strconv.Atoi(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid machine ID"})
@@ -61,7 +58,6 @@ func (h *MachineHandler) UpdateStatus(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Machine status updated successfully"})
 }
 
-// POST /api/machines
 func (h *MachineHandler) Create(c *gin.Context) {
 	var req models.Machine
 	if err := c.ShouldBindJSON(&req); err != nil {

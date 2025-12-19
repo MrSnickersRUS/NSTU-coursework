@@ -34,9 +34,7 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-// SendEmail sends an email using SMTP
 func (e *EmailService) SendEmail(to, subject, body string) error {
-	// For development, if no SMTP is configured, just log
 	if e.password == "" {
 		fmt.Printf("📧 [EMAIL] To: %s\nSubject: %s\nBody:\n%s\n\n", to, subject, body)
 		return nil
@@ -54,11 +52,9 @@ func (e *EmailService) SendEmail(to, subject, body string) error {
 	return smtp.SendMail(addr, auth, e.from, []string{to}, msg)
 }
 
-// SendVerificationEmail sends email verification link
 func (e *EmailService) SendVerificationEmail(to, token string) error {
 	subject := "NETI WASH - Подтверждение email"
 
-	// In production, this should be the actual domain
 	verifyURL := fmt.Sprintf("%s/verify-email.html?token=%s", e.appURL, token)
 
 	body := fmt.Sprintf(`Привет!
@@ -76,7 +72,6 @@ func (e *EmailService) SendVerificationEmail(to, token string) error {
 	return e.SendEmail(to, subject, body)
 }
 
-// SendPasswordResetEmail sends password reset link
 func (e *EmailService) SendPasswordResetEmail(to, token string) error {
 	subject := "NETI WASH - Восстановление пароля"
 
@@ -99,7 +94,6 @@ func (e *EmailService) SendPasswordResetEmail(to, token string) error {
 	return e.SendEmail(to, subject, body)
 }
 
-// GenerateSecureToken generates a cryptographically secure random token
 func GenerateSecureToken() (string, error) {
 	bytes := make([]byte, 32)
 	if _, err := rand.Read(bytes); err != nil {
@@ -108,9 +102,7 @@ func GenerateSecureToken() (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-// ValidateEmailFormat performs basic email format validation
 func ValidateEmailFormat(email string) bool {
-	// Simple validation - contains @ and domain
 	if !strings.Contains(email, "@") {
 		return false
 	}

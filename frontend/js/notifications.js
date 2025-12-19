@@ -1,29 +1,23 @@
-// Notifications module
-// Handles notification display, read status, and toggle from profile
-
 const NotificationManager = {
-    // Notification types
     TYPES: {
-        SUCCESS: 'success',      // Стирка завершена
-        WARNING: 'warning',      // Технические работы
-        INFO: 'info',            // Общая информация
-        BOOKING: 'booking'       // Напоминание о брони
+        SUCCESS: 'success',
+        WARNING: 'warning',
+        INFO: 'info',
+        BOOKING: 'booking'
     },
 
-    // Get notifications from localStorage or return default demo data
     getNotifications() {
         const stored = localStorage.getItem('netiwash_notifications');
         if (stored) {
             return JSON.parse(stored);
         }
-        // Default demo notifications
         return [
             {
                 id: 1,
                 type: 'success',
                 title: 'Стирка завершена!',
                 message: 'Машинка #2 закончила работу. Заберите вещи.',
-                time: Date.now() - 10 * 60 * 1000, // 10 minutes ago
+                time: Date.now() - 10 * 60 * 1000,
                 read: false
             },
             {
@@ -31,35 +25,30 @@ const NotificationManager = {
                 type: 'warning',
                 title: 'Технические работы',
                 message: 'Завтра с 10:00 до 12:00 прачечная закрыта.',
-                time: Date.now() - 24 * 60 * 60 * 1000, // Yesterday
+                time: Date.now() - 24 * 60 * 60 * 1000,
                 read: false
             }
         ];
     },
 
-    // Save notifications to localStorage
     saveNotifications(notifications) {
         localStorage.setItem('netiwash_notifications', JSON.stringify(notifications));
     },
 
-    // Check if notifications are enabled
     isEnabled() {
         const setting = localStorage.getItem('netiwash_notifications_enabled');
-        return setting === null || setting === 'true'; // Enabled by default
+        return setting === null || setting === 'true';
     },
 
-    // Toggle notifications on/off
     setEnabled(enabled) {
         localStorage.setItem('netiwash_notifications_enabled', enabled ? 'true' : 'false');
     },
 
-    // Get unread count
     getUnreadCount() {
         const notifications = this.getNotifications();
         return notifications.filter(n => !n.read).length;
     },
 
-    // Mark notification as read
     markAsRead(id) {
         const notifications = this.getNotifications();
         const notification = notifications.find(n => n.id === id);
@@ -71,7 +60,6 @@ const NotificationManager = {
         }
     },
 
-    // Mark all as read
     markAllAsRead() {
         const notifications = this.getNotifications();
         notifications.forEach(n => n.read = true);
@@ -80,7 +68,6 @@ const NotificationManager = {
         this.renderNotifications();
     },
 
-    // Add new notification
     addNotification(type, title, message) {
         if (!this.isEnabled()) return;
 
@@ -94,7 +81,6 @@ const NotificationManager = {
             read: false
         };
         notifications.unshift(newNotification);
-        // Keep only last 20 notifications
         if (notifications.length > 20) {
             notifications.pop();
         }
@@ -103,7 +89,6 @@ const NotificationManager = {
         this.renderNotifications();
     },
 
-    // Update the notification badge (red dot)
     updateBadge() {
         const badge = document.getElementById('notification-badge');
         if (badge) {
@@ -112,7 +97,6 @@ const NotificationManager = {
         }
     },
 
-    // Format time ago
     formatTimeAgo(timestamp) {
         const now = Date.now();
         const diff = now - timestamp;
@@ -127,7 +111,6 @@ const NotificationManager = {
         return `${days} дн. назад`;
     },
 
-    // Get icon and styling for notification type
     getTypeConfig(type) {
         const configs = {
             success: {
@@ -203,53 +186,40 @@ const NotificationManager = {
         }).join('');
     },
 
-    // Initialize
     init() {
         this.updateBadge();
         this.renderNotifications();
     }
 };
 
-// Global function for "Mark all as read" button
 function markAllNotificationsRead() {
     NotificationManager.markAllAsRead();
 }
 
-// ============================================
-// BookingWatcher - monitors bookings and sends notifications when washing completes
-// ============================================
 const BookingWatcher = {
     checkInterval: null,
     notifiedBookings: new Set(),
-    lastKnownStatuses: {}, // Track status changes
+    lastKnownStatuses: {},
 
     init() {
-        // Load previously notified bookings
         const stored = localStorage.getItem('netiwash_notified_bookings');
         if (stored) {
             this.notifiedBookings = new Set(JSON.parse(stored));
         }
 
-        // Load last known statuses
         const storedStatuses = localStorage.getItem('netiwash_booking_statuses');
         if (storedStatuses) {
             this.lastKnownStatuses = JSON.parse(storedStatuses);
         }
 
-        // Start checking every 15 seconds (faster for better responsiveness)
         this.startWatching();
-
-        // Also check immediately
         setTimeout(() => this.checkBookings(), 2000);
     },
 
     startWatching() {
         if (this.checkInterval) return;
 
-        // Check immediately
         this.checkBookings();
-
-        // Check on visibility change (when user opens app)
         document.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'visible') {
                 Notification.requestPermission().then(permission => {
@@ -261,10 +231,9 @@ const BookingWatcher = {
             }
         });
 
-        // Periodic check
         this.checkInterval = setInterval(() => {
             this.checkBookings();
-        }, 15000); // Check every 15 sec
+        }, 15000);
 
         console.log('[BookingWatcher] Started watching');
     },
@@ -277,10 +246,7 @@ const BookingWatcher = {
     },
 
     async checkBookings() {
-        // Only check if notifications are enabled
         if (!NotificationManager.isEnabled()) return;
-
-        // Only check if logged in
         if (typeof api === 'undefined' || !api.getToken()) return;
 
         try {
@@ -294,7 +260,6 @@ const BookingWatcher = {
                 const currentStatus = booking.status;
                 const previousStatus = this.lastKnownStatuses[bookingId];
 
-                // Check if status changed to 'completed'
                 if (currentStatus === 'completed' && previousStatus !== 'completed') {
                     if (!this.notifiedBookings.has(bookingId)) {
                         this.sendWashingCompleteNotification(booking);
@@ -303,7 +268,6 @@ const BookingWatcher = {
                     }
                 }
 
-                // Also check time-based completion for active bookings
                 if (currentStatus === 'active' && !this.notifiedBookings.has(bookingId)) {
                     if (booking.time_slot && booking.time_slot.includes('-')) {
                         const [endHour, endMin] = booking.time_slot.split('-')[1].split(':').map(Number);
@@ -318,12 +282,9 @@ const BookingWatcher = {
                         }
                     }
                 }
-
-                // Update last known status
                 this.lastKnownStatuses[bookingId] = currentStatus;
             });
 
-            // Save statuses
             this.saveStatuses();
 
         } catch (error) {
@@ -332,7 +293,6 @@ const BookingWatcher = {
     },
 
     saveStatuses() {
-        // Keep only recent statuses (last 50)
         const keys = Object.keys(this.lastKnownStatuses);
         if (keys.length > 50) {
             const toRemove = keys.slice(0, keys.length - 50);
@@ -345,11 +305,7 @@ const BookingWatcher = {
         const machineName = booking.machine_name || `Машинка #${booking.machine_id}`;
         const title = 'Стирка завершена! 🧺';
         const message = `${machineName} закончила работу. Заберите вещи!`;
-
-        // Add to in-app notifications
         NotificationManager.addNotification('success', title, message);
-
-        // Send push notification if available
         if (typeof PWAManager !== 'undefined' && 'Notification' in window) {
             try {
                 await PWAManager.sendLocalNotification(title, message, '/bookings.html');
@@ -362,12 +318,11 @@ const BookingWatcher = {
     },
 
     saveNotifiedBookings() {
-        // Keep only last 100 to avoid bloating localStorage
         const arr = Array.from(this.notifiedBookings).slice(-100);
         localStorage.setItem('netiwash_notified_bookings', JSON.stringify(arr));
     },
 
-    // --- WEB PUSH LOGIC ---
+
     async setupWebPush() {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
             console.log('[WebPush] Not supported');
@@ -377,25 +332,22 @@ const BookingWatcher = {
         try {
             const reg = await navigator.serviceWorker.ready;
 
-            // 1. Get VAPID Key
             const keyRes = await api.get('/vapid-key');
             if (!keyRes || !keyRes.publicKey) return;
             const convertedKey = this.urlBase64ToUint8Array(keyRes.publicKey);
 
-            // 2. Unsubscribe old subscription first (to handle key rotation)
             const existingSub = await reg.pushManager.getSubscription();
             if (existingSub) {
                 console.log('[WebPush] Unsubscribing old subscription...');
                 await existingSub.unsubscribe();
             }
 
-            // 3. Subscribe with new key
             const sub = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: convertedKey
             });
 
-            // 3. Send to Server
+
             const subJSON = JSON.parse(JSON.stringify(sub));
             await api.post('/subscribe', {
                 endpoint: subJSON.endpoint,
@@ -421,10 +373,8 @@ const BookingWatcher = {
         return outputArray;
     },
 
-    // Clean up old entries (run occasionally)
     cleanupOldEntries() {
         const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        // Simple cleanup - just keep it reasonably sized
         if (this.notifiedBookings.size > 100) {
             const arr = Array.from(this.notifiedBookings).slice(-50);
             this.notifiedBookings = new Set(arr);
@@ -433,17 +383,13 @@ const BookingWatcher = {
     }
 };
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     NotificationManager.init();
-
-    // Start BookingWatcher after a short delay (to let api load)
     setTimeout(() => {
         BookingWatcher.init();
     }, 2000);
 });
 
-// Also check when page becomes visible again
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
         BookingWatcher.checkBookings();

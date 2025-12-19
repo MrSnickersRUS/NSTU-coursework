@@ -1,4 +1,3 @@
-// PWA Manager - Install Prompt & Notifications
 const PWAManager = {
     deferredPrompt: null,
     isInstalled: false,
@@ -12,7 +11,6 @@ const PWAManager = {
         console.log('[PWA] Init complete. isInstalled:', this.isInstalled);
     },
 
-    // Register Service Worker
     registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -27,7 +25,6 @@ const PWAManager = {
         }
     },
 
-    // Handle Install Prompt
     handleInstallPrompt() {
         window.addEventListener('beforeinstallprompt', (e) => {
             console.log('💡 beforeinstallprompt fired');
@@ -44,7 +41,6 @@ const PWAManager = {
         });
     },
 
-    // Check if app is already installed
     checkIfInstalled() {
         if (window.matchMedia('(display-mode: standalone)').matches) {
             this.isInstalled = true;
@@ -52,18 +48,14 @@ const PWAManager = {
         }
     },
 
-    // Show install banner
     showInstallBanner() {
-        // Don't show if already installed
         if (this.isInstalled) return;
 
-        // Check if banner was dismissed recently
         const dismissed = localStorage.getItem('pwa_install_dismissed');
         if (dismissed && Date.now() - parseInt(dismissed) < 24 * 60 * 60 * 1000) {
-            return; // Don't show for 24 hours after dismissal
+            return;
         }
 
-        // Create banner if not exists
         let banner = document.getElementById('pwa-install-banner');
         if (!banner) {
             banner = document.createElement('div');
@@ -93,12 +85,10 @@ const PWAManager = {
             `;
             document.body.appendChild(banner);
 
-            // Install button click
             document.getElementById('pwa-install-btn').addEventListener('click', () => {
                 this.promptInstall();
             });
 
-            // Dismiss button click
             document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
                 this.hideInstallBanner();
                 localStorage.setItem('pwa_install_dismissed', Date.now().toString());
@@ -115,7 +105,6 @@ const PWAManager = {
         }
     },
 
-    // Trigger install prompt
     async promptInstall() {
         if (!this.deferredPrompt) {
             console.log('No install prompt available');
@@ -134,24 +123,19 @@ const PWAManager = {
         return outcome === 'accepted';
     },
 
-    // Initialize notification permission
     initNotificationPermission() {
-        // Check if notifications are enabled in app settings
         const notificationsEnabled = localStorage.getItem('netiwash_notifications_enabled');
         if (notificationsEnabled === 'false') {
-            return; // User disabled in app
+            return;
         }
 
-        // Request permission if not yet asked
         if ('Notification' in window && Notification.permission === 'default') {
-            // Wait a bit before asking
             setTimeout(() => {
                 this.requestNotificationPermission();
-            }, 10000); // Ask after 10 seconds
+            }, 10000);
         }
     },
 
-    // Request notification permission
     async requestNotificationPermission() {
         if (!('Notification' in window)) {
             console.log('Notifications not supported');
@@ -170,11 +154,10 @@ const PWAManager = {
         return false;
     },
 
-    // Send local notification (for testing or app notifications)
     async sendLocalNotification(title, body, url = '/main.html') {
         const notificationsEnabled = localStorage.getItem('netiwash_notifications_enabled');
         if (notificationsEnabled === 'false') {
-            return; // Disabled in app settings
+            return;
         }
 
         if (Notification.permission !== 'granted') {
@@ -194,15 +177,12 @@ const PWAManager = {
     }
 };
 
-// Initialize PWA Manager
 document.addEventListener('DOMContentLoaded', () => {
     PWAManager.init();
 });
 
-// Global function for install button
 window.installPWA = () => PWAManager.promptInstall();
 
-// CSS for animation (wrapped in IIFE to avoid variable conflicts)
 (function () {
     const pwaStyle = document.createElement('style');
     pwaStyle.textContent = `

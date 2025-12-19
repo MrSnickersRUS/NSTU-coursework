@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Auth & Role Check
     const token = api.getToken();
     const user = api.getUserInfo();
 
@@ -8,11 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // Update clock
     updateClock();
     setInterval(updateClock, 1000);
-
-    // Load Data
     await loadStatistics();
     loadMachines();
     loadAllBookings();
@@ -33,15 +29,12 @@ async function loadStatistics() {
             api.get('/machines')
         ]);
 
-        // Calculate stats
         const activeBookings = bookings.filter(b => b.status === 'active').length;
         const pendingBookings = bookings.filter(b => {
             const date = new Date(b.start_time);
             return date > new Date() && b.status !== 'completed';
         }).length;
         const machinesInRepair = machines.filter(m => m.status === 'repair').length;
-
-        // Today's bookings
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const todayBookings = bookings.filter(b => {
@@ -50,7 +43,6 @@ async function loadStatistics() {
             return bookingDate.getTime() === today.getTime();
         }).length;
 
-        // Update UI if elements exist
         const safeSetText = (id, val) => {
             const el = document.getElementById(id);
             if (el) el.innerText = val;
@@ -67,7 +59,7 @@ async function loadStatistics() {
 
 async function loadMachines() {
     const container = document.getElementById('machinesList');
-    if (!container) return; // Exit if not on page
+    if (!container) return;
 
     container.innerHTML = '<div class="text-center py-4 text-gray-400">Загрузка...</div>';
 
@@ -137,15 +129,13 @@ async function loadMachines() {
 
 async function loadAllBookings() {
     const container = document.getElementById('bookingsList');
-    if (!container) return; // Exit if not on page
+    if (!container) return;
 
     container.innerHTML = '<div class="text-center py-4 text-gray-400">Загрузка...</div>';
 
     try {
         const bookings = await api.get('/bookings?all=true');
         container.innerHTML = '';
-
-        // Show recent 10
         const recentBookings = bookings.slice(0, 10);
 
         recentBookings.forEach(b => {
@@ -186,8 +176,6 @@ async function loadAllBookings() {
         container.innerHTML = `<div class="text-red-500 text-center">Ошибка: ${e.message}</div>`;
     }
 }
-
-// Admin Actions
 window.toggleMachineStatus = async (id, status) => {
     if (!status) return;
 

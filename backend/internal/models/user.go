@@ -22,7 +22,7 @@ type RegisterRequest struct {
 }
 
 type LoginRequest struct {
-	Login    string `json:"login" binding:"required"` // Can be email or username
+	Login    string `json:"login" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -31,7 +31,7 @@ type AuthResponse struct {
 	User  struct {
 		ID    int    `json:"id"`
 		Email string `json:"email"`
-		Name  string `json:"name"` // Mapping 'login' to 'name' for frontend compatibility
+		Name  string `json:"name"`
 		Role  string `json:"role"`
 	} `json:"user"`
 }

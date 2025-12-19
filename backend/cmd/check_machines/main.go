@@ -17,7 +17,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Check machines
 	fmt.Println("=== MACHINES ===")
 	rows, err := db.Query(context.Background(), "SELECT id, name, status FROM machines ORDER BY id")
 	if err != nil {
@@ -39,7 +38,6 @@ func main() {
 	if machineCount == 0 {
 		fmt.Println("⚠️  NO MACHINES FOUND! Creating initial machines...")
 
-		// Insert sample machines
 		machines := []struct{ name, status string }{
 			{"Стиральная машина #1", "free"},
 			{"Стиральная машина #2", "free"},

@@ -24,13 +24,11 @@ func main() {
 	}
 	defer dbPool.Close()
 
-	// Auto-run migrations
 	if err := database.RunMigrations(dbPool); err != nil {
 		log.Printf("⚠️ Migration warning: %v", err)
 	}
 
 	emailService := utils.NewEmailService()
-
 	userRepo := repository.NewUserRepository(dbPool)
 	authService := service.NewAuthService(userRepo, cfg.JWTSecret, emailService)
 	authHandler := handlers.NewAuthHandler(authService)
@@ -55,26 +53,19 @@ func main() {
 		})
 	})
 
-	// Machine & Booking Dependencies
 	machineRepo := repository.NewMachineRepository(dbPool)
 	machineHandler := handlers.NewMachineHandler(machineRepo)
-
 	bookingRepo := repository.NewBookingRepository(dbPool)
 	bookingService := service.NewBookingService(bookingRepo)
 	bookingHandler := handlers.NewBookingHandler(bookingService)
 
-	// Notification Dependencies (Web Push)
 	pushRepo := repository.NewPushRepository(dbPool)
 	notificationService := service.NewNotificationService(pushRepo, bookingRepo)
 	notificationHandler := handlers.NewNotificationHandler(notificationService)
 
-	// Start Background Worker
 	notificationService.StartWorker(context.Background())
-
-	// Middleware
 	authMiddleware := middleware.NewAuthMiddleware(cfg.JWTSecret)
 
-	// API Group
 	api := r.Group("/api")
 	{
 		auth := api.Group("/auth")
@@ -85,7 +76,6 @@ func main() {
 
 		api.GET("/machines", machineHandler.GetAll)
 
-		// Protected Routes
 		protected := api.Group("/")
 		protected.Use(authMiddleware.RequireAuth)
 		{
@@ -94,36 +84,27 @@ func main() {
 			protected.DELETE("/bookings/:id", bookingHandler.Cancel)
 		}
 
-		// Admin-only Routes
 		admin := api.Group("/")
 		admin.Use(authMiddleware.RequireAuth, authMiddleware.RequireRole("admin", "superadmin"))
 		{
 			admin.PUT("/machines/:id", machineHandler.UpdateStatus)
 			admin.PATCH("/bookings/:id/complete", bookingHandler.CompleteBooking)
 		}
-
-		// Email verification & password reset (public routes)
 		api.GET("/verify-email", emailHandler.VerifyEmail)
 		api.POST("/forgot-password", emailHandler.ForgotPassword)
 		api.POST("/reset-password", emailHandler.ResetPassword)
 
-		// Web Push
 		api.GET("/vapid-key", notificationHandler.GetVAPIDKey)
 		api.POST("/subscribe", authMiddleware.RequireAuth, notificationHandler.Subscribe)
 
 		api.POST("/machines", authMiddleware.RequireAuth, machineHandler.Create)
-
-		// Aliases for root api access if needed matching frontend
 		api.POST("/register", authHandler.Register)
 		api.POST("/login", authHandler.Login)
 	}
 
-	// Serve frontend static files
-	// Check if frontend directory exists
 	if _, err := os.Stat("./frontend"); os.IsNotExist(err) {
 		log.Println("⚠️ WARNING: ./frontend directory not found!")
 		log.Println("⚠️ Static files will not be served.")
-		// Try alternative paths
 		if _, err := os.Stat("/root/frontend"); err == nil {
 			log.Println("✅ Found frontend at /root/frontend")
 		}
@@ -137,8 +118,6 @@ func main() {
 	r.Static("/icons", "./frontend/icons")
 	r.StaticFile("/manifest.json", "./frontend/manifest.json")
 	r.StaticFile("/sw.js", "./frontend/sw.js")
-
-	// Serve HTML files
 	r.StaticFile("/", "./frontend/index.html")
 	r.StaticFile("/index.html", "./frontend/index.html")
 	r.StaticFile("/main.html", "./frontend/main.html")

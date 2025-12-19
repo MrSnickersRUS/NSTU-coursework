@@ -88,7 +88,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             const day = date.getUTCDate();
             const month = date.toLocaleString('ru-RU', { month: 'long', timeZone: 'UTC' });
 
-            // Use UTC hours because backend sends "local" time as UTC timestamp
             const startH = String(date.getUTCHours()).padStart(2, '0');
             const startM = String(date.getUTCMinutes()).padStart(2, '0');
             const timeStart = `${startH}:${startM}`;

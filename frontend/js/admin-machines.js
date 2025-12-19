@@ -53,8 +53,6 @@ async function loadMachinesList() {
         machines.forEach(m => {
             const el = document.createElement('div');
             el.className = 'bg-white rounded-2xl p-5 shadow-card border border-gray-100 flex flex-col items-center text-center hover:shadow-lg transition-all';
-
-            // Determine status style
             const info = statusInfo[m.status] || statusInfo.free;
 
             el.innerHTML = `
@@ -85,13 +83,7 @@ async function loadMachinesList() {
     }
 }
 
-// Modal Logic
 window.openMachineModal = (isEdit = false, id = null, name = '', status = 'free') => {
-    // We'll use a simple prompt logic or the generic modal for now, 
-    // but ideally we need a custom form modal.
-    // For MVP/fixing, let's use the generic modal with inputs injected if possible, 
-    // or just prompts for now to get it working, OR create a specific modal HTML in the page.
-    // Let's assume there is a #machineModal in the HTML (we will add it).
 
     const modal = document.getElementById('machineModal');
     const form = document.getElementById('machineForm');
@@ -99,7 +91,6 @@ window.openMachineModal = (isEdit = false, id = null, name = '', status = 'free'
 
     if (!modal || !form) return;
 
-    // Reset form
     form.reset();
     document.getElementById('machineId').value = id || '';
     document.getElementById('machineName').value = name;
@@ -107,7 +98,6 @@ window.openMachineModal = (isEdit = false, id = null, name = '', status = 'free'
 
     modalTitle.innerText = isEdit ? 'Редактировать машинку' : 'Новая машинка';
 
-    // Show modal
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }

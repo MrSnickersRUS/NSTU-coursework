@@ -44,7 +44,7 @@ func (r *UserRepository) GetByEmailOrLogin(ctx context.Context, identifier strin
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, nil // Not found
+			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
@@ -62,7 +62,7 @@ func (r *UserRepository) GetByEmail(ctx context.Context, email string) (*models.
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return nil, nil // Not found
+			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
@@ -125,7 +125,6 @@ func (r *UserRepository) UpdatePasswordAndClearResetToken(ctx context.Context, u
 	return nil
 }
 
-// CountSuperAdmins returns the number of superadmin users
 func (r *UserRepository) CountSuperAdmins(ctx context.Context) (int, error) {
 	query := `SELECT COUNT(*) FROM users WHERE role = 'superadmin'`
 	var count int

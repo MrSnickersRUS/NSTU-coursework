@@ -1,6 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
-    // --- LOGIN FORM ---
     const loginForm = document.querySelector('form[action="/api/login"]') || document.getElementById('loginForm') || (document.location.pathname.endsWith('index.html') ? document.querySelector('form') : null);
 
     if (loginForm) {
@@ -17,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             setLoading(submitBtn, true, 'Вход...');
             try {
-                // Send 'login' field (backend accepts email OR username in this field)
                 const response = await api.post('/auth/login', { login: email, password });
                 handleLoginSuccess(response);
             } catch (error) {
@@ -40,7 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- REGISTER FORM ---
     const registerForm = document.getElementById('registerForm');
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
@@ -59,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Email validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 if (typeof showModal !== 'undefined') {
@@ -68,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Login validation (at least 3 chars)
             if (login.length < 3) {
                 if (typeof showModal !== 'undefined') {
                     showModal('⚠️ Некорректный логин', 'Логин должен содержать минимум 3 символа');
@@ -76,7 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Password validation (at least 6 chars)
             if (password.length < 6) {
                 if (typeof showModal !== 'undefined') {
                     showModal('⚠️ Слабый пароль', 'Пароль должен содержать минимум 6 символов');
@@ -88,9 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await api.post('/auth/register', { email, login, password });
 
-                // Check if user needs to verify email (no token returned)
                 if (!response.token || response.token === '') {
-                    // Show verification required message
                     if (typeof showModal !== 'undefined') {
                         showModal(
                             '📧 Подтвердите email',
@@ -110,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }, 2000);
                     }
                 } else {
-                    // Old behavior - auto login
                     handleLoginSuccess(response);
                 }
             } catch (error) {
@@ -121,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- RESET PASSWORD FORM ---
     const resetForm = document.getElementById('resetForm');
     if (resetForm) {
         resetForm.addEventListener('submit', async (e) => {
@@ -146,15 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Helpers
 function setLoading(btn, isLoading, text) {
     if (isLoading) {
-        btn.dataset.originalText = btn.innerText; // Save original text
+        btn.dataset.originalText = btn.innerText;
         btn.innerText = text;
         btn.disabled = true;
         btn.classList.add('opacity-70');
     } else {
-        btn.innerText = btn.dataset.originalText || text; // Restore
+        btn.innerText = btn.dataset.originalText || text;
         btn.disabled = false;
         btn.classList.remove('opacity-70');
     }
@@ -163,10 +151,9 @@ function setLoading(btn, isLoading, text) {
 function handleLoginSuccess(response) {
     if (response.token) {
         api.setToken(response.token);
-        // Store user info including email
         if (response.user) {
             api.setUserInfo({
-                login: response.user.name, // Backend returns 'name' mapped from login
+                login: response.user.name,
                 email: response.user.email || `${response.user.name}@neti.ru`,
                 role: response.user.role,
                 name: response.user.name

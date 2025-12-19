@@ -79,25 +79,12 @@ func (r *BookingRepository) GetAll(ctx context.Context) ([]models.Booking, error
 }
 
 func (r *BookingRepository) Cancel(ctx context.Context, id int) error {
-	// We can physically delete or just set status to cancelled.
-	// Since the user can stick to "history," setting status is better, OR we can delete if it's in the future.
-	// The prompt implies straightforward cancellation. Let's delete future ones for now, or just Delete to keep it simple as per earlier mock.
-	// Actually, keeping history is better. Let's update status to 'cancelled' if we had that enum, otherwise DELETE.
-	// Our model has Status field.
-	// BUT, usually a Delete request implies removal.
-	// Let's implement DELETE for now to match the "Cancel" button behavior of disappearing item (or simple removal).
-	// If we update status, we need to handle that status in frontend.
-	// Front behaves as if it's gone?
-	// Let's DELETE for simplicity in V1, unless status is 'completed'.
-
 	query := `DELETE FROM bookings WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
 	return err
 }
 
 func (r *BookingRepository) CheckAvailability(ctx context.Context, machineID int, start, end time.Time) (bool, error) {
-	// Check if any ACTIVE booking overlaps
-	// Overlap logic: (Start1 < End2) AND (End1 > Start2)
 	query := `
 		SELECT COUNT(*)
 		FROM bookings
@@ -168,9 +155,6 @@ func (r *BookingRepository) GetExpiredActiveBookings(ctx context.Context) ([]mod
 }
 
 func (r *BookingRepository) MarkPushSent(ctx context.Context, id int) error {
-	// Also ensures we don't send again if we check 'push_sent' later
-	// But for current logic: found expired -> send -> complete -> done.
-	// If we want to support 'push_sent' column usage:
 	query := `UPDATE bookings SET push_sent = TRUE WHERE id = $1`
 	_, err := r.db.Exec(ctx, query, id)
 	return err

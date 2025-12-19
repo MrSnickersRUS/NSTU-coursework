@@ -1,4 +1,3 @@
-// --- SHEET LOGIC (Global) ---
 window.openBookingSheet = (name, id) => {
     window.selectedMachineId = id;
     const titleEl = document.getElementById('sheetTitle');
@@ -52,7 +51,6 @@ window.closeNotificationSheet = () => {
     }
 }
 
-// --- CONFIRM LOGOUT (Global) ---
 window.confirmLogout = () => {
     if (typeof showModal === 'function') {
         showModal(
@@ -70,33 +68,25 @@ window.confirmLogout = () => {
 };
 
 
-// --- MAIN LOGIC ---
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Auth Check
     if (!api.getToken()) {
         window.location.href = 'index.html';
         return;
     }
 
-    // 2. User Greeting & Profile Info
     const userInfo = api.getUserInfo();
     const login = userInfo.login || 'Пользователь';
     const email = userInfo.email || `${login}@neti.ru`;
-
-    // A. Main Page Header Greeting
     const greetingH1 = document.querySelector('header h1');
     if (greetingH1 && window.location.pathname.includes('main.html')) {
         greetingH1.textContent = login + ' 👋';
     }
 
-    // B. Profile Page Elements  
     const profileNameEl = document.querySelector('main h2.text-2xl');
     const profileEmailEl = document.querySelector('main p.text-gray-sec.font-medium');
-
     if (profileNameEl) profileNameEl.textContent = login;
     if (profileEmailEl) profileEmailEl.textContent = email;
 
-    // Setup Logout Button - remove any inline handler and set proper one
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
         logoutBtn.removeAttribute('onclick');
@@ -107,7 +97,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 3. Load Active Bookings Count (only on main page)
     if (window.location.pathname.includes('main.html')) {
         try {
             const bookings = await api.get('/bookings');
@@ -121,7 +110,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 4. Load Machines (Only on Main Page)
     if (window.location.pathname.includes('main.html')) {
         const machinesContainer = document.querySelector('.grid.grid-cols-2');
         if (machinesContainer) {
@@ -135,12 +123,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // 5. Initialize Date/Time Pickers
     initBookingPickers();
 });
 
 
-// --- MACHINES RENDERER ---
 function renderMachines(machines, container) {
     container.innerHTML = '';
     machines.forEach(machine => {
@@ -190,7 +176,6 @@ function initBookingPickers() {
     const sheet = document.getElementById('bookingSheet');
     if (!sheet) return;
 
-    // --- DATES LOGIC (Scroll + Border Style) ---
     const datesContainer = sheet.querySelector('.flex.gap-3');
     if (datesContainer) {
         datesContainer.innerHTML = '';
@@ -240,7 +225,6 @@ function initBookingPickers() {
         });
     }
 
-    // --- TIMES LOGIC ---
     const timesContainer = document.getElementById('timesContainer');
     let occupiedSlots = {};
 
@@ -314,7 +298,6 @@ function initBookingPickers() {
 }
 
 
-// --- SUBMIT BOOKING (Global) ---
 window.submitBooking = async () => {
     const sheet = document.getElementById('bookingSheet');
     if (!sheet) return;

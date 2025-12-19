@@ -1,4 +1,3 @@
-// Helper for booking status
 window.getBookingRealStatus = function (booking) {
     if (booking.status !== 'active') return booking.status;
 

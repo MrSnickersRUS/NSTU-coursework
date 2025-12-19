@@ -13,7 +13,6 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-	// Try loading .env file, but ignore error if not found (e.g. in production/docker)
 	_ = godotenv.Load()
 
 	port := os.Getenv("PORT")
@@ -23,10 +22,8 @@ func LoadConfig() *Config {
 
 	dbUrl := os.Getenv("DATABASE_URL")
 	if dbUrl == "" {
-		// Default to local docker defaults
 		dbUrl = "postgres://postgres:password@localhost:5432/netiwash?sslmode=disable"
 	}
-
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
 		jwtSecret = "super-secret-key-change-me"
